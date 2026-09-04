@@ -1,0 +1,27 @@
+<div class="margin-y-2" markdown="1">
+
+{%- assign tool_key = include.tool_key -%}
+{%- assign tool_meta = page.tools[tool_key] -%}
+{%- assign tool_name = include.tool | default: tool_meta.name | default: page.tool | default: "tool_name" -%}
+{%- assign exec_name = include.exec | default: tool_meta.exec | default: tool_name -%}
+{%- assign module = include.module | default: tool_meta.module | default: page.module -%}
+{%- assign version = include.version | default: tool_meta.version | default: "<version>" -%}
+{%- assign known_module = include.known | default: "false" -%}
+
+{%- unless known_module == "true" %}
+Check whether `{{ exec_name }}` is already available and whether SCINet provides it through the module system:
+{%- else %}
+SCINet provides `{{ tool_name }}` as a module:
+{%- endunless %}
+
+```bash
+module spider {{ exec_name }}
+module avail {{ exec_name }}
+```
+From the available tool versions, load the selected one with:
+
+```bash
+module load {{ module }}/{{ version }}
+```
+<small>**NOTE:** *Record the module version you used in your `README` or project notes so the setup can be reproduced later.*</small>
+</div>

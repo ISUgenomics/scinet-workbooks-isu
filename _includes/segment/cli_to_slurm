@@ -1,0 +1,2 @@
+{%- assign tool_name = include.tool | default: "tool" -%}
+After the interactive run completes successfully and produces the expected outputs, reuse the validated `{{ tool_name }}` command in a SLURM script. That way, you can automate the task for multiple inputs and/or schedule testing of different parameter settings.

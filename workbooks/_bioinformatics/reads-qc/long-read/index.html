@@ -1,0 +1,399 @@
+---
+title: Long-read QC and trimming
+description: "Learn how to interpret long-read QC patterns in PacBio HiFi and Oxford Nanopore data and choose appropriate filtering, trimming, and validation strategies."
+svg: /genomics.svg
+author: Aleksandra Badaczewska
+
+header:
+  overlay_image: 07-wrangling/assets/img/07_data_acquisition_banner.png
+index: 2
+order: 2
+wg: Bioinformatics
+type: lesson module
+
+objectives:
+  - Understand what long-read quality control evaluates before downstream analysis.
+  - Recognize common technical problems in PacBio HiFi and Oxford Nanopore reads and how they appear in QC summaries.
+  - Distinguish between quality and length filtering, adapter or barcode trimming, and chimeric-read cleanup.
+  - Choose among sample-level QC/filtering tools and upstream platform-native workflows based on the observed problem, sequencing platform, and available input format.
+
+applications:
+  - Interpreting long-read QC summaries before assembly, alignment, isoform analysis, or variant detection.
+  - Deciding whether long-read preprocessing is necessary and which type of cleanup is justified.
+  - Matching practical filtering and trimming strategies to PacBio HiFi or Oxford Nanopore data.
+  - Preparing long-read datasets for reproducible downstream analysis without unnecessary sequence loss.
+
+terms: [read, long-read, read length, sequencing technologies, quality control, platform bias, coverage, read preprocessing]
+
+takeaways:
+  - Long-read QC emphasizes read length, read-level quality, yield, and platform-specific artifacts rather than short-read-style per-base trimming alone.
+  - PacBio HiFi and Oxford Nanopore data should not be interpreted as interchangeable long-read inputs.
+  - Long-read preprocessing is usually selective and problem-driven, not automatic.
+  - Post-processing QC is essential for confirming that filtering or trimming improved the reads without sacrificing too much useful yield.
+
+questions:
+  - qid: 1
+    title: HiFi restraint
+    question: "A PacBio HiFi dataset shows long, high-quality reads and no clear adapter or barcode artifacts. What is the best first decision?"
+    answers:
+      - trim or filter the reads anyway, because all long-read data require cleanup
+      - leave the reads unchanged unless a downstream requirement or confirmed artifact justifies preprocessing
+      - convert the reads to short-read settings and trim low-quality tails
+    answer: 2
+    responses:
+      - Long-read preprocessing should not be automatic.
+      - Correct. Clean PacBio HiFi reads often need no extra preprocessing before downstream analysis.
+      - PacBio HiFi QC should not be forced into a short-read trimming logic.
+  - qid: 2
+    title: Nanopore filtering
+    question: "An Oxford Nanopore dataset contains many short, low-quality reads that would add noise to assembly. Which response is most appropriate?"
+    answers:
+      - apply aggressive adapter trimming first, even if no adapter artifact is visible
+      - use quality and length filtering, then re-check the retained yield and distributions
+      - discard the entire dataset because variable long-read quality is always unusable
+    answer: 2
+    responses:
+      - Adapter trimming is not the first response when the main issue is read quality or length.
+      - Correct. Long-read filtering is often the most direct response when low-quality or very short reads would hurt downstream analysis.
+      - Variable quality is common in Nanopore data and often manageable.
+  - qid: 3
+    title: Platform-specific trimming
+    question: "Which tool is the best match for confirmed PacBio adapter or barcode cleanup?"
+    answers:
+      - Dorado
+      - Lima
+      - FastQC
+    answer: 2
+    responses:
+      - Dorado is the Oxford Nanopore-specific option, not the PacBio one.
+      - Correct. Lima is the platform-specific choice for PacBio adapter and barcode trimming.
+      - FastQC is a short-read QC tool and not the right choice here.
+  - qid: 4
+    title: Long-read metrics
+    question: "Which QC summary is usually more informative for long-read data than for short-read data?"
+    answers:
+      - per-cycle adapter module alone
+      - read length distribution and retained yield
+      - duplication warnings alone
+    answer: 2
+    responses:
+      - Adapter artifacts can matter, but they are not the main universal summary for long-read QC.
+      - Correct. Long-read interpretation depends heavily on how long the reads are and how much usable sequence remains.
+      - Duplication is usually less central here than length, yield, and read-level quality.
+  - qid: 5
+    title: Chimeric reads
+    question: "Why should suspected chimeric or concatenated long reads be interpreted carefully before downstream analysis?"
+    answers:
+      - because they can distort alignment or assembly by combining sequence from more than one original molecule
+      - because they always indicate biological fusion transcripts
+      - because they only matter in short-read data
+    answer: 1
+    responses:
+      - Correct. Chimeric long reads can reflect technical artifacts that mislead structural interpretation.
+      - Biological fusions are only one possible explanation, not the default one.
+      - Chimeric structure is a real long-read concern.
+  - qid: 6
+    title: Coverage tradeoff
+    question: "What is the main risk of using very aggressive long-read filtering thresholds?"
+    answers:
+      - the reads become duplicated
+      - too much yield is removed, leaving insufficient coverage or reduced support for downstream analysis
+      - adapter content necessarily increases
+    answer: 2
+    responses:
+      - Filtering does not create duplication.
+      - Correct. Long-read cleanup is always a tradeoff between cleaner reads and enough retained sequence.
+      - Adapter content is not caused by filtering itself.
+  - qid: 7
+    title: Post-processing QC
+    question: "What is the best reason to repeat QC after long-read filtering or trimming?"
+    answers:
+      - to confirm that the targeted problem improved and that enough useful long-read data remain
+      - to make every possible warning disappear
+      - to replace the original QC report entirely
+    answer: 1
+    responses:
+      - Correct. The second QC pass checks both improvement and cost.
+      - The goal is not a perfect-looking report at any price.
+      - The original QC report is still needed for comparison.
+  - qid: 8
+    title: PacBio versus Nanopore
+    question: "Why should PacBio HiFi and Oxford Nanopore long reads not automatically be processed the same way?"
+    answers:
+      - because long-read platforms differ in read quality, read length profiles, and common artifacts
+      - because PacBio data never need QC
+      - because Nanopore data cannot be filtered
+    answer: 1
+    responses:
+      - Correct. Platform-specific behavior changes which QC signals matter and what preprocessing is reasonable.
+      - PacBio HiFi still needs QC, even if cleanup is often lighter.
+      - Nanopore data can be filtered; the question is when that tradeoff is justified.
+
+overview: [objectives, applications, terminology]
+---
+
+<div class="highlighted highlighted--basic"><div class="highlighted__body" markdown="1">
+This lesson assumes familiarity with basic sequencing concepts and common sequencing data formats such as `FASTQ`, plus platform-native formats where relevant.  
+If you need a refresher, start with [Sequencing technologies and assay types](/bioinformatics/resources/sequencing), [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature) and [File formats in Bioinformatics](/bioinformatics/resources/file_formats).
+</div></div>
+
+## Overview
+
+This lesson is a direct continuation of the introduction to [Sequencing Reads Quality Control](../), and focuses on how QC interpretation changes when the reads themselves are long enough to carry substantial structural information. 
+In long-read workflows, the most important questions often center on read length, retained yield, platform-specific artifacts, and whether preprocessing is needed at all rather than on routine tail trimming. The goal is to recognize significant long-read QC signals, understand how **PacBio HiFi** and **Oxford Nanopore** differ in practice, and choose an appropriate preprocessing strategy before assembly, alignment, or other downstream analysis.
+
+{% include overviews %}
+
+
+## Long reads
+
+Long reads are sequencing reads that typically span **thousands to tens of thousands of bases**, and may extend much farther when DNA integrity and platform chemistry allow it. 
+In practice, [PacBio HiFi](/bioinformatics/resources/sequencing#sequencing-technologies) platforms often produce highly accurate reads around **10-25 kb**, 
+while [Oxford Nanopore](/bioinformatics/resources/sequencing#sequencing-technologies) technology can produce reads from a few kilobases to **100 kb or more**, sometimes much longer. 
+The extended read length brings direct QC implications:
+- read length itself becomes a major signal of sample integrity and downstream usefulness,
+- total yield and retained coverage can matter as much as read quality,
+- platform-specific artifacts such as barcode or adapter remnants, chimeric reads, or broad quality variation may require selective cleanup rather than routine trimming.
+
+Therefore, long-read quality control is not mainly about routine trimming. It is about evaluating read length, read-level quality, retained yield, 
+and platform-specific artifacts to decide whether the reads are already fit for purpose or whether cleanup would improve the dataset enough to justify the loss of sequence. 
+In practice, most long-read preprocessing is guided by a few key decisions:
+
+- **What kind of long-read data are these?**  
+  *PacBio HiFi and Oxford Nanopore can behave very differently in read length, error profile, and common artifacts, because they are generated by different sequencing chemistries and produce different tradeoffs between read accuracy, read span, and platform-specific cleanup needs.*
+
+- **Is the main issue quality, length, yield, or read structure?**  
+  *Long-read workflows often depend more on read-level summaries than on short-read-style per-base warnings.*
+
+- **Would cleanup improve the dataset more than it reduces usable coverage?**  
+  *Filtering very short or poor-quality reads may help, but only if enough informative reads remain afterward. Because long reads carry much more sequence context per read, removing entire reads can also remove a substantial amount of structural or transcript-level information.*
+
+- **Is the problem part of sample-level QC, or does it belong to an upstream native workflow?**  
+  *PacBio read-structure cleanup, current ONT raw-signal trimming with `Dorado`, legacy ONT read cleanup with `Porechop`, and long-read quality filtering are different tasks and should not be treated as the same operation.*
+
+Long-read QC also depends on the **analysis type**. In genomic DNA workflows such as assembly, polishing, or structural interpretation, the main concern is often whether the reads are long enough, accurate enough, and numerous enough to support the genome-scale task. In transcript-focused workflows such as isoform analysis, full-length transcript sequencing, or direct RNA analysis, read structure and barcode or primer handling can become more important because the biological interpretation depends on preserving intact transcript-level molecules.
+
+
+## What QC evaluates
+
+### Read length distribution
+
+Read length distribution shows how long the reads are and how broadly that [read length](/bioinformatics/resources/nomenclature#read-type-and-length) varies across the dataset. 
+In long-read workflows, this is often one of the most informative QC summaries because downstream assembly, isoform reconstruction, 
+and structural interpretation all depend on whether enough long molecules were successfully sequenced. 
+For background on how sequencing reads differ by type and size, see [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature#read-type-and-length).
+
+### Read quality distribution
+
+Long-read QC usually emphasizes read-level quality summaries rather than short-read-style decisions about trimming individual low-quality tails. 
+The important question is whether a substantial fraction of reads falls below the quality needed for the planned downstream analysis, 
+and whether filtering would improve that balance without removing too much yield. This is especially important in Oxford Nanopore data, 
+where read quality often varies more broadly than in PacBio HiFi datasets. For background on [quality scores](/bioinformatics/resources/nomenclature#quality-score) 
+and how sequencing platforms differ, review [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature#quality-score) 
+and [Sequencing technologies and assay types](/bioinformatics/resources/sequencing#sequencing-technologies).
+
+### Yield and usable coverage
+
+Long-read runs are also evaluated by how much usable sequence they produce. Here, **yield** means the total amount of read data retained for analysis, 
+while **coverage** reflects how many times the genome, transcript, or target region is represented by the retained reads. 
+Low yield, or strong read loss after filtering, can leave too little [coverage](/bioinformatics/resources/nomenclature#sequencing-depth--coverage) for reliable assembly, polishing, or isoform analysis even if the remaining reads look cleaner.
+
+### Adapter and barcode remnants
+
+**Sequencing adapters** are short synthetic sequences attached to DNA or cDNA fragments during library preparation so the fragments can bind to the flow cell and be sequenced. 
+**Barcodes** are short identifying sequences used to distinguish samples or molecules within the same run. 
+[Adapter contamination](/glossary#adapter-contamination) and barcode sequence can remain in long reads after sequencing or demultiplexing. 
+These signals do not always require action, but when they are clearly present they can interfere with read structure, barcode assignment, or downstream interpretation 
+and may justify platform-specific trimming. The need for this cleanup depends strongly on [sequencing technology](/bioinformatics/resources/sequencing#sequencing-technologies) and library design.
+The correct intervention also depends on what form of data you actually have available for the workflow.
+
+In barcoded workflows, this may also include **demultiplexing** rather than trimming alone. In that case, the main question is whether barcode interpretation belongs in the upstream platform workflow before downstream QC summaries are treated as sample-specific.
+
+### Chimeric or partial reads
+
+Some long-read datasets contain reads that are unexpectedly concatenated, split, or incomplete. These patterns can arise from library preparation or sequencing artifacts and matter because long reads are often used specifically to represent intact molecules, long genomic segments, or full-length transcripts.
+
+### Contamination and non-target sequence
+
+Long-read datasets can also contain non-target sequence such as host carryover, control sequence, off-target molecules, or mixed-sample content. These problems do not always appear as a simple quality failure, but they can still affect yield, interpretation, and downstream analysis. In this module, the main role of QC is to recognize when the read set looks inconsistent with the expected sample or assay. A dedicated contamination analysis may require tools or workflow context outside this lesson, but the possibility should still be considered when read summaries look biologically implausible or unexpectedly mixed.
+
+### Platform-specific context
+
+The same QC pattern may mean different things in PacBio HiFi and Oxford Nanopore (ONT) data. PacBio HiFi usually starts with higher read accuracy, while Nanopore often shows broader variation in read quality and length. Long-read QC therefore has to be interpreted in the context of the sequencing platform, library design, and downstream goal rather than by one universal threshold. For broader background on platform differences of this kind, see [Sequencing technologies and assay types](/bioinformatics/resources/sequencing#sequencing-technologies). For workflow details, input-format expectations, and platform-specific examples, use the [Oxford Nanopore](./ont/) and [PacBio](./pacbio/) reference pages.
+
+PacBio HiFi and Oxford Nanopore are both [third-generation sequencing (TGS)](/bioinformatics/resources/sequencing#sequencing-technologies) platforms, but their read profiles and preprocessing needs still differ in important ways.
+
+| Aspect | **PacBio HiFi** | **Oxford Nanopore** |
+|--------|-------------------|---------------------|
+| Typical read profile | long, highly accurate reads, often around 10-25 kb | broader read-length range and more variable read quality |
+| QC emphasis | retained yield, read length distribution, confirmed structural artifacts | read quality distribution, read length distribution, retained yield, platform-specific artifacts |
+| Common QC concern | whether read length and retained yield are sufficient, and whether structural artifacts are truly present | whether broad quality variation, short-fragment excess, or adapter/barcode remnants are large enough to affect downstream analysis |
+| Common preprocessing | often none unless adapter or barcode artifacts are clearly present | quality or length filtering and targeted adapter or barcode trimming are more often justified |
+
+
+
+## Common QC patterns
+
+| Pattern in QC summary | Likely cause | Likely consequence | First response |
+|-----------------------|--------------|--------------------|----------------|
+| many reads are much shorter than expected | degraded input, incomplete size selection, fragmented molecules | poorer span across long targets, weaker assembly or isoform support | inspect the read length distribution and consider conservative length filtering |
+| broad spread of low-quality reads, especially in Nanopore data | run variability, basecalling quality, library condition | noisier alignments or assemblies | compare the read quality distribution and decide whether filtering is justified |
+| strong adapter or barcode remnants | incomplete cleanup, demultiplexing artifacts, platform-specific library structure | read-structure artifacts, incorrect barcode assignment, downstream cleanup needs | confirm the signal and use platform-specific trimming if needed |
+| strong yield loss after filtering | overly strict thresholds or marginal original data | insufficient retained coverage for downstream analysis | reconsider quality or length cutoffs before filtering further |
+| suspected chimeric or split reads | library or sequencing artifacts | misleading structural interpretation or fragmented alignments | inspect whether splitting or filtering the affected reads is more appropriate |
+
+
+## Preprocessing options
+
+Long-read preprocessing is usually more selective than short-read preprocessing because much of the value of the dataset comes from preserving long, informative molecules. The goal is to remove the technical problems that truly interfere with downstream analysis while preserving enough read length and total yield to keep the dataset useful.
+The two main approaches are:
+- [trimming or splitting](#trimming-and-splitting), which removes confirmed technical sequence or separates structurally misleading reads while preserving as much usable long-read structure as possible;
+- [filtering](#filtering), which removes entire reads that do not meet chosen quality, length, or content criteria.
+
+<div class="highlighted highlighted--warning"><div class="highlighted__body" markdown="1">
+**Do not clean long reads just because a tool can.**  
+Not all long-read datasets need preprocessing. If the QC summary already matches the needs of the downstream workflow, extra cleanup may remove useful reads without meaningful benefit. 
+The best long-read preprocessing strategy is the one that improves read structure or read quality without sacrificing the read length and retained coverage.
+</div></div>
+
+### Trimming and splitting
+
+#### Adapter and barcode trimming
+
+Platform-specific trimming is useful when adapters or barcodes are clearly present in the reads and are likely to interfere with downstream analysis. For long-read data, trimming should remove confirmed technical sequence while preserving the biological insert as much as possible.
+In current ONT workflows, this may be tied to basecalling from raw signal rather than post-processing of already exported reads.
+
+#### Chimeric read handling
+
+Some long reads may need to be split or removed if they represent concatenated molecules, chimeric artifacts, or other structurally misleading read forms. Splitting is appropriate when a coherent portion of the read can still be recovered, while removal is safer when the artifact makes the read unreliable as a whole. This is especially important when downstream tools assume that a long read corresponds to one coherent fragment or transcript.
+
+### Filtering
+
+#### Quality filtering
+
+Quality filtering removes reads whose overall quality is too poor for the planned downstream use. This is common in long-read workflows because filtering entire reads is often more appropriate than trimming many small low-quality segments from them.
+
+#### Length filtering
+
+Length filtering removes reads that are too short to contribute meaningfully to the downstream task. This can improve long-read datasets when short fragments, partial molecules, or degraded reads are abundant, but it must be balanced against the risk of discarding too much usable coverage.
+
+
+## Choosing a tool
+
+| Tool | Best for | Strengths | Common misuse |
+|------|----------|-----------|---------------|
+| [`NanoPlot`](./ont/) | long-read QC visualization from exported read files | clear summaries of read length, read quality, and yield across ONT and PacBio read exports | used as a replacement for platform-native QC or treated as a pass or fail decision by itself |
+| [`Filtlong`](./ont/filter_filtlong_chopper) | score-based long-read quality and length filtering | flexible ranking and selection of reads when filtering thresholds need tuning | thresholds are set too aggressively, causing major yield loss |
+| [`chopper`](./ont/filter_filtlong_chopper) | stream-oriented long-read quality and length filtering | simple threshold-based filtering that fits pipeline-style workflows | treated as interchangeable with `Filtlong` without considering its different filtering logic |
+| [`Lima`](./pacbio/trim_lima) | PacBio adapter and barcode trimming when PacBio-native structure and inputs justify it | platform-specific handling for PacBio read structure | used on exported reads as though it were generic `FASTQ` trimming |
+| [`Dorado`](./ont/trim_dorado) | current ONT adapter and primer trimming in supported raw-signal workflows | official ONT trimming integrated with basecalling and barcode-aware processing | assumed to be a generic post-`FASTQ` trimming tool |
+| [`Porechop`](./ont/trim_porechop) | legacy ONT read cleanup on already exported ONT reads | explicit adapter and chimera-oriented cleanup in older `FASTQ`-centered ONT workflows | presented as the current default ONT trimming approach |
+
+
+## Validate output reads
+
+Preprocessing decisions should be validated with a post-processing QC step. In long-read workflows, this usually means running the relevant QC summary tool again on the filtered or trimmed reads and comparing the new results with the original QC output. This second QC pass is often more informative than the initial report, because it shows not only whether the targeted problem improved, but also whether enough long, usable sequence was retained for the downstream task.
+
+### QC validation checklist
+
+- **Did the read length distribution improve in the intended way?**  
+  *For example, very short technical fragments may decrease, while the retained reads should still preserve the long-read span needed downstream.*
+
+- **Did overall read quality improve where expected?**  
+  *If quality filtering was the main intervention, the retained read set should shift toward more reliable reads rather than simply becoming much smaller.*
+
+- **Did adapter or barcode signals decrease where expected?**  
+  *If trimming was justified, the post-processing QC should show a cleaner read structure rather than the same artifact persisting unchanged.*
+
+- **Is the retained yield still sufficient for the downstream task?**  
+  *Cleaner reads are not enough if filtering leaves too little sequence or too little coverage for assembly, polishing, or isoform analysis.*
+
+- **Do the processed reads now better match the planned downstream analysis?**  
+  *The best outcome is not the strictest cleanup, but a read set that is cleaner, still informative, and better suited to the biological question.*
+
+
+## If your case is...
+
+<div class="usa-accordion" data-allow-multiple markdown="1">
+
+{% include accordion title="uncertainty about whether preprocessing is needed at all" controls="lrqc1" expanded=false class="outline" icon=false %}
+<div id="lrqc1" class="accordion_content" markdown="1">
+Start with the QC tutorial that matches your platform:
+- [Long-read PacBio QC summary visualization with NanoPlot](./pacbio/qc_nanoplot)
+- [Long-read ONT quality check with NanoPlot](./ont/qc_nanoplot)
+
+The goal is to decide whether the current read length, read quality, and yield already fit the downstream task, or whether filtering, trimming, or no cleanup at all is the best decision.
+</div>
+
+{% include accordion title="high-quality pacbio hifi reads with stable metrics" controls="lrqc2" expanded=false class="outline" icon=false %}
+<div id="lrqc2" class="accordion_content" markdown="1">
+This is often a case where **no extra preprocessing** is the right decision. If the reads are already long, accurate, and free of obvious adapter or barcode artifacts, keep the dataset intact unless a downstream workflow requires specific cleanup.
+</div>
+
+{% include accordion title="oxford nanopore reads with broad quality variation" controls="lrqc3" expanded=false class="outline" icon=false %}
+<div id="lrqc3" class="accordion_content" markdown="1">
+This often points first to **quality or length filtering**, not automatic trimming. Use [ONT read-level quality and length filtering with Filtlong or chopper](./ont/filter_filtlong_chopper) if the lower-quality fraction is likely to interfere with assembly, alignment, or other downstream analysis. The key question is whether the cleaner retained reads will improve the result enough to justify the loss of yield.
+</div>
+
+{% include accordion title="many long reads are shorter than expected" controls="lrqc4" expanded=false class="outline" icon=false %}
+<div id="lrqc4" class="accordion_content" markdown="1">
+Inspect whether the short-fragment fraction is large enough to reduce the usefulness of the dataset. Conservative length filtering may help when many reads are too short to contribute meaningfully, but only if the retained yield and coverage remain sufficient afterward.
+</div>
+
+{% include accordion title="yield or coverage already looks too low before any filtering" controls="lrqc4a" expanded=false class="outline" icon=false %}
+<div id="lrqc4a" class="accordion_content" markdown="1">
+Be cautious with additional cleanup. If the run already appears too shallow for the planned analysis, aggressive filtering may make the dataset less usable rather than better. First decide whether the current reads are still adequate for a less demanding downstream goal or whether more data may be needed.
+</div>
+
+{% include accordion title="adapter or barcode remnants in pacbio reads" controls="lrqc5" expanded=false class="outline" icon=false %}
+<div id="lrqc5" class="accordion_content" markdown="1">
+Use [Adapter and barcode trimming for PacBio reads with Lima](./pacbio/trim_lima) when the artifact is confirmed and likely to affect downstream analysis. PacBio cleanup should be targeted to read-structure problems rather than applied automatically.
+</div>
+
+{% include accordion title="adapter or barcode remnants in oxford nanopore reads" controls="lrqc6" expanded=false class="outline" icon=false %}
+<div id="lrqc6" class="accordion_content" markdown="1">
+Use [Barcode-aware adapter and primer trimming from ONT raw signal with Dorado](./ont/trim_dorado) when the problem is clearly present and you are working in a supported current ONT raw-signal workflow. If you instead have older exported ONT reads that require legacy post-processing, use [Legacy adapter and barcode trimming for ONT reads with Porechop](./ont/trim_porechop). This is most useful when confirmed technical sequence is interfering with the data or with downstream interpretation, and when trimming needs to be coordinated correctly with barcode-aware processing.
+</div>
+
+{% include accordion title="suspected chimeric or concatenated reads" controls="lrqc7" expanded=false class="outline" icon=false %}
+<div id="lrqc7" class="accordion_content" markdown="1">
+Do not assume that every unusual long read is biologically meaningful. First determine whether the pattern reflects a technical artifact, then decide whether splitting or filtering the affected reads is safer for the downstream workflow.
+</div>
+
+{% include accordion title="too much yield is lost after filtering" controls="lrqc8" expanded=false class="outline" icon=false %}
+<div id="lrqc8" class="accordion_content" markdown="1">
+This usually means the current thresholds are too aggressive for the original dataset. Revisit the quality or length cutoffs and decide whether the downstream task truly requires that level of cleanup, or whether a less aggressive filter would preserve enough long-read information to be more useful overall.
+</div>
+
+{% include accordion title="the reads seem usable for one downstream task but not another" controls="lrqc8a" expanded=false class="outline" icon=false %}
+<div id="lrqc8a" class="accordion_content" markdown="1">
+Interpret the QC results in the context of the actual goal. A dataset may be acceptable for rough alignment or exploratory assembly but still fall short for polishing, high-confidence structural interpretation, or full-length isoform analysis. Do not apply one universal cleanup rule without considering what the downstream workflow requires.
+</div>
+
+{% include accordion title="the qc summary differs strongly between pacbio and nanopore runs" controls="lrqc9" expanded=false class="outline" icon=false %}
+<div id="lrqc9" class="accordion_content" markdown="1">
+That is expected. PacBio HiFi and Oxford Nanopore have different read quality profiles, read length behavior, and common artifacts. Interpret each platform on its own terms before deciding whether the data need filtering or trimming.
+</div>
+
+</div>
+
+
+## Quick Quiz
+
+<div class="usa-accordion ">
+{% include accordion title="Check your understanding" controls="quiz-long-read-qc" expanded=false class="question" icon=true %}
+<div id="quiz-long-read-qc" class="accordion_content" markdown='1'>
+Now that you've worked through long-read QC patterns, platform differences, preprocessing options, and validation logic, use these questions to test whether you can match a long-read problem to the right interpretation or response.
+
+{% include question qid="1,2,3,4,5,6,7,8" %}
+</div>
+</div>
+
+
+## Lesson takeaways
+
+<ul>
+  {% for takeaway in page.takeaways %}
+    <li>{{ takeaway }}</li>
+  {% endfor %}
+</ul>

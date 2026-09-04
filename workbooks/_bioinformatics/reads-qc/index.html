@@ -1,0 +1,237 @@
+---
+title: Sequencing Reads Quality Control
+description: "Assess sequencing read quality, identify common technical artifacts in short-read and long-read data, and choose appropriate trimming, filtering, or QC summarization strategies before downstream analysis."
+svg: /genomics.svg
+author: Aleksandra Badaczewska
+
+header:
+  overlay_image: 07-wrangling/assets/img/07_data_acquisition_banner.png
+index: 1
+order: 3
+wg: Bioinformatics
+type: introduction
+
+objectives:
+  - Understand what read-level quality control is meant to detect before downstream analysis across both short-read and long-read workflows.
+  - Recognize the most common technical issues in sequencing reads, including low-quality sequence, adapter carryover, and run- or platform-specific artifacts.
+  - Distinguish between quality assessment, trimming, filtering, and post-trimming validation.
+  - Choose the most appropriate lesson or tutorial based on sequencing technology and QC task.
+
+applications:
+  - Checking whether raw reads are suitable for alignment, quantification, or assembly.
+  - Deciding when trimming is necessary and what kind of trimming is justified.
+  - Routing common short-read and long-read QC problems to the right tool and workflow.
+  - Preparing sequencing data for downstream bioinformatics analysis on Atlas and Ceres.
+
+terms: [sequencing technologies, nucleotide sequence, read, read length, quality control, platform bias]
+
+takeaways:
+  - Read-level QC is a decision step, not just a reporting step.
+  - Common warnings do not all mean the same thing; interpret them in the context of assay design and expected read structure.
+  - Trimming should be guided by evidence from QC, not applied blindly.
+  - Re-running QC after trimming helps confirm that preprocessing improved the data rather than damaging it.
+
+overview: [objectives, applications, terminology]
+---
+
+<div class="highlighted highlighted--basic"><div class="highlighted__body" markdown="1">
+This module focuses on **sequencing read quality control** for **short-read** and **long-read** data, as well as methods for summarizing QC results across samples.  
+Before working through this module, review [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature) for the core terminology needed to interpret read-level QC concepts and results.
+</div></div>
+
+## Overview
+
+Before you align reads, quantify transcripts, or compare samples, you need to know whether the sequencing data are structurally sound, 
+biologically plausible, and free of technical problems that will distort later results. The goal is not to make every warning disappear 
+but to determine whether the reads are trustworthy enough for the intended downstream task, and if not, what minimal preprocessing is needed to correct the problem.
+
+
+This introduction page shows how classic sample-level read quality assessment, trimming, filtering, and QC summarization fit into bioinformatics workflows, and where upstream platform-native preprocessing steps may belong before that QC begins.
+
+{% include overviews %}
+
+
+## Where QC fits in the workflow
+
+Read-level quality control is an early checkpoint between platform-native sequencing outputs and meaningful downstream analysis. In some workflows, basecalling, demultiplexing, or structural cleanup must come first so that QC is performed on the per-sample reads that will actually be analyzed.
+
+<div class="process-list h4 ul" markdown="1">
+
+#### Platform-native preprocessing *(if needed)*
+
+Start here when the workflow still depends on native sequencing outputs rather than read-level files, for example ONT raw signal, PacBio upstream processing, demultiplexing, or read generation.
+
+#### Raw sequencing data
+
+In most projects, bioinformatics analysis starts here after you receive per-sample read files from the sequencing facility or provider. These are typically exported reads such as `FASTQ` or read-space `BAM`, ready for sample-level QC.
+
+#### <span class="t-info">Read quality control (QC)</span>
+
+Inspect quality, sequence composition, adapter contamination, duplication, and other technical signals before changing the data.
+
+#### Trimming or filtering *(if needed)*
+
+Apply preprocessing only when the QC results point to a specific problem that should be corrected before downstream analysis.
+
+#### <span class="t-info">Read QC after trimming</span>
+
+Check the processed reads again to confirm that preprocessing improved the data without removing more sequence than necessary.
+
+#### Downstream analysis
+
+Continue with the analysis step that matches your data and study design, such as alignment, quantification, assembly, or variant discovery.
+
+</div>
+
+| In `short-read` workflows | In `long-read` workflows |
+|---|---|
+| the `FASTQ` inputs are first evaluated with `FastQC` and optionally trimmed with `fastp`, `Cutadapt`, `BBDUK`, or `Trimmomatic (legacy)` depending on the task, and then used for splice-aware alignment or alignment-free quantification | long-read workflows may begin from exported reads for QC or filtering, or from platform-native inputs where basecalling, demultiplexing, or structural cleanup may occur before downstream sample-level QC |
+
+If you need background on the sequencing technologies and file structures behind read types, see:
+- [Sequencing technologies and assay types](/bioinformatics/resources/sequencing)
+- [File formats in Bioinformatics](/bioinformatics/resources/file_formats)
+
+
+## Why quality control matters before analysis
+
+Quality control matters before bioinformatics analysis because each QC signal can point to a different technical problem, and may require a different response before downstream steps.
+
+**Common QC patterns in short-read data**
+
+| QC signal | What it may affect | Typical next action |
+|-----------|--------------------|---------------------|
+| Low-quality tails | alignment accuracy, quantification reliability, variant evidence near read ends | inspect per-base quality and consider quality trimming |
+| Adapter contamination | false sequence content, misalignment, short-insert artifacts | inspect adapter content and use adapter-aware trimming |
+| Unexpected GC pattern | contamination, library bias, unusual composition | compare across samples and inspect sequence context |
+| Overrepresented sequences | technical artifacts, ribosomal carryover, repeated contaminants | inspect flagged sequences before deciding whether to filter |
+| Read length/layout mismatch | broken pairing assumptions, pipeline incompatibility | verify file naming, read structure, and sequencing design |
+
+**Common QC patterns in long-read data**
+
+| QC signal | What it may affect | Typical next action |
+|-----------|--------------------|---------------------|
+| Broad read-length variation | assembly continuity, transcript model completeness, yield expectations | inspect length distribution and decide whether minimum-length filtering is useful |
+| Lower per-read quality | alignment accuracy, consensus quality, downstream confidence | inspect per-read quality profiles and consider quality-based filtering only if needed |
+| Adapter or barcode remnants | read structure, demultiplexing accuracy, downstream cleanup | confirm whether cleanup belongs in an upstream platform-native workflow such as `Lima` or `Dorado`, or in exported-read cleanup |
+| Barcoded read pools needing sample separation | sample assignment, downstream per-sample QC, barcode-aware interpretation | decide whether barcode demultiplexing belongs in the upstream platform workflow before downstream QC interpretation |
+| Platform-specific terminal artifacts | end-sequence interpretation, retained read usability | inspect the pattern first, then choose targeted trimming only when it improves downstream use |
+| Excess very short reads | reduced mappability, lower assembly value, noisier summaries | filter by length when short reads add little value to the planned analysis |
+
+<div class="highlighted highlighted--tip"><div class="highlighted__body" markdown="1">
+**A failed or warning-heavy QC module does not always mean the sample is unusable.**  
+Interpret the pattern first, then decide whether trimming, filtering, or simply documenting the limitation is the most appropriate response.
+</div></div>
+
+## Reads preprocessing
+
+Quality assessment, trimming, filtering, and post-trimming validation are related steps, but they do not serve the same purpose.
+
+| Step | What it does | Typical short-read use | Typical long-read use |
+|------|--------------|------------------------|-----------------------|
+| quality assessment | inspects the reads without changing them | identify low-quality tails, adapter contamination, GC bias, duplication, or pairing issues | inspect read-length distribution, per-read quality, adapter/barcode remnants, or platform-specific artifacts |
+| trimming | removes sequence from the reads | remove adapters, low-quality ends, poly-G tails, or assay-specific artifacts | remove adapters or barcodes, or trim targeted terminal artifacts when they interfere with downstream analysis |
+| filtering | removes whole reads that do not meet criteria | discard reads that become too short or fail quality thresholds after preprocessing | remove reads below chosen length or quality thresholds before assembly, mapping, or summarization |
+| post-trimming validation | checks whether preprocessing improved the data | confirm that adapter content and poor-quality regions were reduced without over-trimming | confirm that filtering or trimming improved the read set for the planned downstream task |
+
+## Find your next step
+
+<div class="usa-accordion" data-allow-multiple markdown="1">
+
+{% include accordion title="see the full module structure before choosing a tutorial" controls="rqc9" expanded=false class="outline" icon=false %}
+<div id="rqc9" class="accordion_content" markdown="1">
+Start with the lesson page when you need background and decision support, or go directly to a tool tutorial when you already know which task you need to perform. The module is organized around three main areas:
+- [Short-read QC and trimming](./short-read/)
+- [Long-read QC and trimming](./long-read/)
+- [Aggregate QC reports with MultiQC](./aggreagted/)
+</div>
+
+{% include accordion title="decide whether trimming is needed at all" controls="rqc6" expanded=false class="outline" icon=false %}
+<div id="rqc6" class="accordion_content" markdown="1">
+Trimming is needed when the QC results show a technical problem that is likely to interfere with downstream analysis and can be corrected without removing more sequence than necessary.
+
+For **short-read data**, common reasons to trim include adapter contamination from short inserts, low-quality 3' tails, or assay-specific artifacts that should be removed before alignment or quantification. If the reads are structurally clean and quality remains acceptable across most cycles, documenting the QC results may be more appropriate than trimming.
+
+For **long-read data**, the decision is often more selective. You may filter reads by length or quality before assembly, remove adapters or barcodes from Nanopore or PacBio data, or leave the reads unchanged if the quality profile already matches the needs of the downstream workflow.
+
+To work through the logic in more detail, start with [Short-read QC and trimming](./short-read/) or [Long-read QC and trimming](./long-read/), then continue to the tool-specific tutorial that matches your data and QC pattern.
+</div>
+
+{% include accordion title="understand <span class='t-info'>short-read</span> qc concepts before choosing a tool" controls="rqc2a" expanded=false class="outline" icon=false %}
+<div id="rqc2a" class="accordion_content" markdown="1">
+Start with [Short-read QC and trimming](./short-read/) when you need help distinguishing quality problems, adapter contamination, contaminant sequence, and cases where trimming may do more harm than good.  
+Then continue to `FastQC`, `fastp`, `Cutadapt`, `BBDUK`, or `Trimmomatic (legacy)` depending on the pattern you observe in your reads.
+</div>
+
+{% include accordion title="check raw reads before doing any trimming" controls="rqc2" expanded=false class="outline" icon=false %}
+<div id="rqc2" class="accordion_content" markdown="1">
+Check the raw reads first so you can see whether trimming is actually needed, what problem it should address, and how aggressive the preprocessing should be.  
+Use [Illumina short-read quality check with FastQC](./short-read/qc_fastqc) as the first practical step for most short-read datasets.
+</div>
+
+{% include accordion title="understand what FastQC warnings actually mean" controls="rqc1" expanded=false class="outline" icon=false %}
+<div id="rqc1" class="accordion_content" markdown="1">
+`FastQC` warnings are not all equally important: some point to adapter contamination or poor-quality tails, while others reflect assay design, sequence composition, or expected bias.  
+Use [Short-read QC and trimming](./short-read/) for interpretation, then [Illumina short-read quality check with FastQC](./short-read/qc_fastqc) for the practical workflow.
+</div>
+
+{% include accordion title="trim standard adapters and low-quality tails" controls="rqc3" expanded=false class="outline" icon=false %}
+<div id="rqc3" class="accordion_content" markdown="1">
+Use [Standard adapter trimming, quality filtering, and QC reporting with fastp](./short-read/trim_fastp) when you want a modern all-in-one workflow for routine Illumina cleanup.  
+If you specifically need the older sliding-window workflow common in existing teaching materials or established pipelines, use [Sliding-window quality trimming and length filtering with Trimmomatic (legacy)](./short-read/trim_trimmomatic).
+</div>
+
+{% include accordion title="handle special read structures such as UMIs" controls="rqc4" expanded=false class="outline" icon=false %}
+<div id="rqc4" class="accordion_content" markdown="1">
+Go to [Adapter and UMI-aware trimming with poly-G tail correction using Cutadapt](./short-read/trim_cutadapt).  
+Use it when adapter trimming needs to account for barcodes, UMIs, or terminal artifacts that affect what should be preserved in the reads.
+</div>
+
+{% include accordion title="remove adapter sequence and possible contaminants with k-mer matching" controls="rqc5" expanded=false class="outline" icon=false %}
+<div id="rqc5" class="accordion_content" markdown="1">
+Use [K-mer-based adapter and contaminant trimming/filtering with BBDUK](./short-read/trim_bbduk) when the problem is not just low-quality sequence, but may also involve unwanted sequence content that is better handled through k-mer matching.
+</div>
+
+{% include accordion title="understand <span class='t-info'>long-read</span> qc concepts before choosing a tool" controls="rqc7a" expanded=false class="outline" icon=false %}
+<div id="rqc7a" class="accordion_content" markdown="1">
+Start with [Long-read QC and trimming](./long-read/) when you need help interpreting long-read quality profiles, deciding whether filtering is useful, and distinguishing sample-level read QC from upstream platform-native preprocessing.  
+Use the [Oxford Nanopore](./long-read/ont/) and [PacBio](./long-read/pacbio/) reference pages for platform-specific workflow details, input-format expectations, and legacy versus current tool usage.  
+Then continue either to a sample-level read QC or filtering tutorial (`NanoPlot`, `Filtlong`, `chopper`) or, when your data are still in native workflow form, to an upstream platform-native tutorial such as `Lima` or `Dorado`.
+</div>
+
+{% include accordion title="inspect nanopore or pacbio long-read quality" controls="rqc7b" expanded=false class="outline" icon=false %}
+<div id="rqc7b" class="accordion_content" markdown="1">
+Use the QC tutorial that matches your platform:
+- [Long-read ONT quality check with NanoPlot](./long-read/ont/qc_nanoplot)
+- [Long-read PacBio QC summary visualization with NanoPlot](./long-read/pacbio/qc_nanoplot)
+</div>
+
+{% include accordion title="filter long reads by quality or length" controls="rqc7c" expanded=false class="outline" icon=false %}
+<div id="rqc7c" class="accordion_content" markdown="1">
+Choose the filtering tutorial that matches your platform:
+- [ONT read-level quality and length filtering with Filtlong or chopper](./long-read/ont/filter_filtlong_chopper)
+- [Read-level quality and length filtering for PacBio with Filtlong or chopper](./long-read/pacbio/filter_filtlong_chopper)
+</div>
+
+{% include accordion title="prepare native long-read data before per-sample qc" controls="rqc7d" expanded=false class="outline" icon=false %}
+<div id="rqc7d" class="accordion_content" markdown="1">
+Use these only when you do **not** yet have per-sample read files such as `FASTQ`, and your data still need an earlier platform-specific step:
+- [Adapter and barcode trimming from PacBio HiFi reads with Lima](./long-read/pacbio/trim_lima)
+- [Barcode-aware adapter and primer trimming from ONT raw signal with Dorado](./long-read/ont/trim_dorado)
+
+If you already have exported ONT read files such as `FASTQ` and need adapter or barcode cleanup on those reads, use:
+- [Legacy adapter and barcode trimming for ONT reads with Porechop](./long-read/ont/trim_porechop)
+</div>
+
+{% include accordion title="summarize many qc reports in one place after running individual tools" controls="rqc8" expanded=false class="outline" icon=false %}
+<div id="rqc8" class="accordion_content" markdown="1">
+Use [Aggregate QC reports with MultiQC](./aggreagted/) after generating per-sample QC reports when you want to compare many samples at once and detect run-wide patterns more easily.
+</div>
+
+</div>
+
+
+## Summary
+
+Read-level QC helps you decide whether raw sequencing data are ready for downstream analysis, which technical problems matter, and what kind of preprocessing is justified. In this module, the lesson pages explain the logic behind those decisions, while the tutorial pages show how to carry them out for short-read tools, long-read tools, and aggregated QC reporting.
+
+Continue with [Short-read QC and trimming](./short-read/) or [Long-read QC and trimming](./long-read/) depending on your sequencing platform.

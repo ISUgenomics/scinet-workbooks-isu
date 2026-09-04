@@ -1,0 +1,50 @@
+<div markdown="1">
+
+{% include segment/ref_dataset controls=include.ref_dataset_controls %}
+
+{%- if include.dataset %}
+
+<div class="highlighted highlighted--basic">
+<div class="highlighted__body" markdown="1" style="font-size: 0.95rem;">
+<h5 class="highlighted__heading" style="font-size: 1rem; margin-bottom: 0.5rem;">Experimental Design</h5>
+<div style="max-width: 100%; overflow-x: auto; font-size: 0.9rem;">
+{% include segment/ref_dataset_ed dataset=include.dataset %}
+</div>
+</div>
+</div>
+
+{%- endif %}
+
+Example input data for this tutorial are available at **{{ include.dataset_path }}**  <br>
+
+{%- if include.prepared_inputs == "true" and include.prior_tutorial_url and include.prior_tutorial_title %}
+
+Inputs for this tutorial are pre-generated files from [{{ include.prior_tutorial_title }}]({{ include.prior_tutorial_url }}). You can continue with this tutorial even if you did not run the earlier steps, by using these prepared files.
+{%- endif %}
+
+{%- if include.mode == "copy" %}
+*The tool used in this tutorial **requires inputs in your working directory**, so copy the dataset into your practice workspace before proceeding to further steps.*
+
+```bash
+cp -r {{ include.dataset_path }} {{ include.target_path | default: "." }}
+```
+{%- elsif include.mode == "link" %}
+*The tool used in this tutorial expects inputs to be reachable from your working directory, but the files do not need to be duplicated. Create a **symbolic link** so the commands can access the shared data through your working directory:*
+
+```bash
+ln -s {{ include.dataset_path }} {{ include.link_name | default: "dataset" }}
+```
+{%- else %}
+*The tool used in this tutorial can read inputs directly from the shared reference location, so you do not need to copy the dataset into your practice space.*
+{%- if include.list == "true" %}
+
+You can quickly inspect the available files with:
+
+```bash
+ls -lh {{ include.dataset_path }}
+```
+{%- endif %}
+{%- endif %}
+
+
+</div>

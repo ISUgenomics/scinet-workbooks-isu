@@ -1,0 +1,142 @@
+---
+title: PacBio
+description: "Platform-specific PacBio reference material for QC review, Lima-based cleanup, and optional read filtering strategies."
+svg: /genomics.svg
+author: Aleksandra Badaczewska
+
+header:
+  overlay_image: 07-wrangling/assets/img/07_data_acquisition_banner.png
+index: 3
+order: 2
+wg: Bioinformatics
+type: reference material
+
+objectives:
+  - Understand how PacBio QC and preprocessing differ from ONT workflow logic.
+  - Distinguish supplementary exported-read QC review from PacBio-native structural cleanup.
+  - Use the correct PacBio tutorial in this module for QC review, filtering, or `Lima`-based cleanup.
+
+applications:
+  - Choosing whether PacBio reads should be left unchanged, filtered selectively, or processed with `Lima`.
+  - Interpreting what PacBio file form is needed for a given tutorial.
+  - Understanding when `NanoPlot` is supplementary and when PacBio-native workflow context matters more.
+
+terms: [PacBio, long-read, Lima, NanoPlot, read filtering]
+
+overview: [objectives, applications, terminology]
+---
+
+## Overview
+
+With PacBio long reads, the first question is often whether preprocessing is needed at all.
+In many cases, the key distinction is not between multiple trimming tools, but between a read set that is already suitable and one that shows a confirmed PacBio-specific structural problem.
+
+{% include overviews %}
+
+## What makes PacBio distinct
+
+PacBio long-read data, especially [PacBio HiFi](https://www.pacb.com/technology/hifi-sequencing/), often begin with higher read accuracy than ONT data and therefore do **not** automatically require the same type of cleanup. For the parallel ONT-specific context in this module, see [Oxford Nanopore](/bioinformatics/reads-qc/long-read/ont/).  
+In many cases, the first question is not "how should these reads be trimmed?" but rather:
+
+- are the reads already suitable for the downstream task,
+- is there a real structural artifact to correct,
+- and are the available files the right form for the intended PacBio tool?
+
+That means PacBio QC often emphasizes:
+
+- retained yield and usable [coverage](/bioinformatics/resources/nomenclature#sequencing-depth--coverage),
+- [read length](/bioinformatics/resources/nomenclature#read-type-and-length) distribution,
+- confirmation of adapter or barcode structure problems before cleanup,
+- and awareness of whether you are working from exported read files such as `FASTQ` or from PacBio-native workflow inputs such as `BAM`.
+
+## Choosing the QC step
+
+### Start by asking what data you have
+
+Before choosing a tutorial, identify the actual PacBio input available to you:
+
+| If you have... | What it usually means | Start here |
+|---|---|---|
+| exported PacBio read files such as `FASTQ` | you can review read length, yield, and broad QC patterns | [Long-read PacBio QC summary visualization with NanoPlot](./qc_nanoplot) |
+| PacBio-native inputs such as `BAM`, together with a read-structure problem requiring `Lima` | cleanup depends on PacBio-specific structure and the correct native workflow inputs | [Adapter and barcode trimming for PacBio reads with Lima](./trim_lima) |
+| exported PacBio read files such as `FASTQ` where many reads are too short or low-value for the downstream task | selective filtering may help if it does not remove too much useful sequence | [Read-level quality and length filtering for PacBio with Filtlong or chopper](./filter_filtlong_chopper) |
+
+If you are not yet sure what the files represent, review [Sequencing technologies and assay types](/bioinformatics/resources/sequencing), [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature), and [File formats in Bioinformatics](/bioinformatics/resources/file_formats).
+
+### PacBio QC does not always imply preprocessing
+
+One of the most important PacBio distinctions in this module is that a clean PacBio dataset may need **no extra preprocessing at all**.
+
+Use [Long-read PacBio QC summary visualization with NanoPlot](./qc_nanoplot) when:
+- you need a supplementary view of exported PacBio read summaries,
+- you want to inspect read length, quality, and yield before changing anything,
+- or you need evidence that a downstream filtering or trimming step is truly justified.
+
+If the reads are already long, accurate, and structurally consistent for the planned analysis, leaving them unchanged may be the correct decision.
+
+### Where `Lima` fits
+
+`Lima` is not generic long-read trimming. It is **PacBio-specific read-structure cleanup** and should be used only when that PacBio-specific problem is both real and compatible with the workflow inputs you have. In practice, that usually means thinking in terms of PacBio-native inputs such as `BAM`, not generic exported-read cleanup alone.
+
+Use [Adapter and barcode trimming for PacBio reads with Lima](./trim_lima) when:
+- adapter or barcode structure is confirmed,
+- downstream analysis depends on cleaner PacBio read structure,
+- and the available inputs are suitable for the documented PacBio `Lima` workflow.
+
+Do **not** treat `Lima` as a routine PacBio equivalent of ordinary `FASTQ` trimming.
+
+### Where filtering fits
+
+Filtering is more selective in PacBio workflows than in many ONT workflows.  
+It can still be useful, but only when removing lower-value reads improves the dataset more than it reduces usable yield.
+
+Use [Read-level quality and length filtering for PacBio with Filtlong or chopper](./filter_filtlong_chopper) when:
+- the QC review shows a clear problem with short or low-value reads,
+- the downstream task benefits from stricter read selection,
+- and you have checked that retained coverage will remain sufficient.
+
+If the read set is already suitable, optional filtering should remain optional.
+
+### Where each PacBio tool fits
+
+| Tool | Role in PacBio workflow | Use it when... | Avoid using it when... |
+|---|---|---|---|
+| [`NanoPlot`](./qc_nanoplot) | supplementary QC visualization | you need read-length, quality, and yield summaries from exported PacBio reads | you are treating it as a replacement for PacBio-native run QC context |
+| [`Filtlong`](./filter_filtlong_chopper) | score-based read filtering | you want flexible selective filtering for a confirmed read-retention problem | the dataset is already clean and filtering is not justified |
+| [`chopper`](./filter_filtlong_chopper) | threshold-based read filtering | you want simple, pipeline-friendly selective filtering | the real issue is PacBio read structure rather than read retention |
+| [`Lima`](./trim_lima) | PacBio-specific adapter and barcode cleanup | you have a confirmed structural artifact and suitable PacBio workflow inputs | you only want generic exported-read trimming |
+
+### A practical PacBio decision path
+
+1. Start with the [Long-read QC and trimming](/bioinformatics/reads-qc/long-read/) lesson if you need the broader long-read logic first.
+2. If the main issue is PacBio-specific adapter or barcode structure and you have suitable native inputs, use [Adapter and barcode trimming for PacBio reads with Lima](./trim_lima).
+3. Review exported PacBio reads with [Long-read PacBio QC summary visualization with NanoPlot](./qc_nanoplot).
+4. If the reads already look suitable, keep them unchanged unless a downstream requirement says otherwise.
+5. If the main issue is read retention, use [Read-level quality and length filtering for PacBio with Filtlong or chopper](./filter_filtlong_chopper).
+
+### Common beginner mistakes
+
+- Assuming PacBio reads should be trimmed just because the dataset is long-read.
+- Treating `NanoPlot` as the only PacBio QC context that matters.
+- Using `Lima` as though it were generic exported-read trimming.
+- Filtering a good PacBio dataset until too much useful yield is lost.
+- Copying ONT preprocessing logic directly into PacBio workflows.
+
+## Common PacBio pipelines
+
+PacBio preprocessing choices are easier to interpret when the downstream pipeline is clear. Common PacBio uses include:
+
+- **Genome assembly**  
+  HiFi assembly workflows often depend more on preserving long, accurate reads and sufficient coverage than on routine cleanup, so the default decision may be to leave the reads unchanged.
+
+- **HiFi read mapping and variant analysis**  
+  These workflows often benefit from PacBio accuracy directly, so the main QC question is whether the reads already meet downstream requirements rather than how aggressively they should be cleaned.
+
+- **Iso-Seq and full-length transcript workflows**  
+  These workflows are especially sensitive to read structure and to whether barcode or adapter cleanup belongs in a PacBio-native workflow such as `Lima`.
+
+- **Consensus generation and polishing**  
+  These pipelines depend on maintaining enough accurate read support, so unnecessary filtering can be more harmful than helpful even when some lower-value reads are present.
+
+- **Barcoded or structurally complex library workflows**  
+  These cases make PacBio-specific structural cleanup more relevant when barcode or adapter interpretation directly affects downstream analysis.

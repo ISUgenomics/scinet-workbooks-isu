@@ -1,0 +1,41 @@
+<div markdown="1">
+{%- case include.dataset %}
+{%- when "arabidopsis_prjna348194" %}
+This dataset comes from [NCBI BioProject PRJNA348194](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA348194) and the related [GEO study GSE87916](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE87916). It contains six Arabidopsis RNA-seq samples: three wild-type replicates and three `atrx-1` mutant replicates, sequenced as [paired-end](/bioinformatics/resources/nomenclature#read-type-and-length) Illumina reads on a [HiSeq 2500](/bioinformatics/resources/sequencing#sequencing-technologies), hence we have 2 files per replicate.
+
+{% include table content="| Condition | replicate 1 | replicate 2 | replicate 3 |
+|---|---|---|---|
+| WT | SRR4420293_1.fastq.gz<br>SRR4420293_2.fastq.gz | SRR4420294_1.fastq.gz<br>SRR4420294_2.fastq.gz | SRR4420295_1.fastq.gz<br>SRR4420295_2.fastq.gz |
+| atrx-1 | SRR4420296_1.fastq.gz<br>SRR4420296_2.fastq.gz | SRR4420297_1.fastq.gz<br>SRR4420297_2.fastq.gz | SRR4420298_1.fastq.gz<br>SRR4420298_2.fastq.gz |" %}
+{%- when "ecoli_prjna944578" %}
+This dataset comes from [NCBI BioProject PRJNA944578](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA944578), using the direct RNA sequencing experiment [SRX19697903](https://www.ncbi.nlm.nih.gov/sra/SRX19697903). It contains one Oxford Nanopore MinION run from *E. coli* K-12 MG1655, produced as [single-end](/bioinformatics/resources/nomenclature#read-type-and-length) native RNA [long reads](/bioinformatics/resources/nomenclature#read-type-and-length), hence we have 1 file per run.
+
+{% include table content="| Run | file |
+|---|---|
+| SRX19697903 | SRX19697903.fastq.gz |" %}
+{%- when "babesia_prjna821606" %}
+This dataset comes from [NCBI BioProject PRJNA821606](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA821606), using the PacBio Iso-Seq experiment [SRX14980933](https://www.ncbi.nlm.nih.gov/sra/SRX14980933). It contains one [single-end](/bioinformatics/resources/nomenclature#read-type-and-length) PacBio Sequel II run from *Babesia duncani*, prepared to support full-length transcript discovery, hence we have 1 file per run.
+
+{% include table content="| Run | file |
+|---|---|
+| SRX14980933 | SRX14980933.fastq.gz |" %}
+{%- when "ont_dna_dorado_pod5" %}
+This dataset comes from the official Dorado `release-v2.1` test-data folder [`dna_r10.4.1_e8.2_400bps_5khz`](https://github.com/nanoporetech/dorado/tree/release-v2.1/tests/data/pod5/dna_r10.4.1_e8.2_400bps_5khz). The three files represent ONT DNA `POD5` inputs from the `r10.4.1` chemistry context, with `400bps` nominal translocation speed and `5khz` sampling-rate context used for Dorado model matching. Each example file contains a single long read with 2048 raw-signal samples.
+
+{% include table content="| sample | flow cell | kit label | workflow context |
+|---|---|---|---|
+| sample 1 | `FLO_PRO114M` | `SQK_LSK114_XL` | ligation DNA prep |
+| sample 2 | `FLO_PRO114M` | `SQK_RAD114` | rapid DNA prep |
+| sample 3 | `FLO_PRO114M` | `SQK_MLK114_96_XL` | multiplex ligation DNA prep |" %}
+
+{%- when "mpox_sqb000004" %}
+This dataset comes from [SquiDBase SQB000004](https://squidbase.org/submissions/SQB000004), titled `RNA Viruses and MPOX (ITM) Antwerp`. The `Monkeypox virus` subset contains three `POD5` files. The submission metadata indicates that DNA was extracted and amplified with SISPA, sequenced on an ONT MinION R10.4.1 flow cell with the Rapid Barcoding Kit v14, in libraries pooling 24 samples. The matching reference genome for alignment is RefSeq [`NC_063383.1`](https://www.ncbi.nlm.nih.gov/nuccore/NC_063383.1).
+
+{% include table content="| sample | flow cell | kit label | workflow context |
+|---|---|---|---|
+| <span style='white-space: nowrap;'>10244_MPOX-65<br>10244_MPOX-66<br>10244_MPOX-67</span> | `FLO-MIN114` (R10.4.1) | `SQK-RBK114.24` | SISPA amplification; <br>pooled rapid-barcoding library |" %}
+
+{%- else %}
+Dataset design summary is not defined for `{{ include.dataset }}`.
+{%- endcase %}
+</div>

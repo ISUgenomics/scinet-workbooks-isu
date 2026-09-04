@@ -1,0 +1,40 @@
+<div class="margin-y-2" markdown="1">
+
+{%- assign tool_key = include.tool_key -%}
+{%- assign tool_meta = page.tools[tool_key] -%}
+{%- assign exec_name = include.exec | default: include.tool | default: tool_meta.exec | default: page.tool | default: "tool_name" -%}
+{%- assign exec_suffix = exec_name | slice: -3, 3 -%}
+{%- if include.version_cmd -%}
+  {%- assign version_cmd = include.version_cmd -%}
+{%- elsif tool_meta.version_cmd -%}
+  {%- assign version_cmd = tool_meta.version_cmd -%}
+{%- elsif exec_suffix == ".sh" -%}
+  {%- assign version_cmd = nil -%}
+{%- else -%}
+  {%- assign version_cmd = exec_name | append: " --version" -%}
+{%- endif -%}
+{%- if include.help_cmd -%}
+  {%- assign help_cmd = include.help_cmd -%}
+{%- elsif tool_meta.help_cmd -%}
+  {%- assign help_cmd = tool_meta.help_cmd -%}
+{%- elsif exec_suffix == ".sh" -%}
+  {%- assign help_cmd = exec_name -%}
+{%- else -%}
+  {%- assign help_cmd = exec_name | append: " --help" -%}
+{%- endif -%}
+
+Verify that the tool is available and responding before running further steps:
+
+```bash
+command -v {{ exec_name }}   # command path
+{%- if version_cmd %}
+{{ version_cmd }}   # version
+{%- endif %}
+{%- if help_cmd %}
+{{ help_cmd }}   # basic usage and options
+{%- endif %}
+```
+{% if include.skip != "true" %}
+<small>**NOTE:** *Record the actual tool version in your `README` or project notes so the setup can be reproduced later.*</small>
+{% endif %}
+</div>

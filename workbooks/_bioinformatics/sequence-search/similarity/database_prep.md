@@ -12,6 +12,17 @@ wg: Bioinformatics
 type: interactive tutorial
 ---
 
+objectives:
+-  Distinguish between nucleotide and protein BLAST databases.
+-  Inspect a FASTA file before database construction.
+-  Create a local BLAST database with `makeblastdb`.
+-  Preserve sequence identifiers using `-parse_seqids`.
+-  Verify a database using `blastdbcmd`.
+-  Retrieve individual sequences from a BLAST database.
+-  Run a test BLAST search against a custom database.
+
+applications
+
 # Creating Local Sequence Databases for BLAST
 
 ## Overview
@@ -30,17 +41,7 @@ Custom BLAST databases are useful when working with:
 
 In this tutorial, you will create local nucleotide and protein BLAST databases, inspect their contents, retrieve sequences, and run a test search.
 
-## Learning objectives
 
-By the end of this tutorial, you should be able to:
-
-1. Distinguish between nucleotide and protein BLAST databases.
-2. Inspect a FASTA file before database construction.
-3. Create a local BLAST database with `makeblastdb`.
-4. Preserve sequence identifiers using `-parse_seqids`.
-5. Verify a database using `blastdbcmd`.
-6. Retrieve individual sequences from a BLAST database.
-7. Run a test BLAST search against a custom database.
 
 ## Prerequisites
 

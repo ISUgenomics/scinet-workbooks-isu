@@ -76,7 +76,7 @@ This tutorial downloads two genomes and two predicted proteomes. Make sure your 
 
 ## Getting Started
 
-{% include setup/shell %}
+{% include setup/shell %} 
 
 {% include setup/90daydata %}
 
@@ -304,22 +304,22 @@ blastdbcmd \
   -out XP_050524263.1.fasta
 ```
 
-For a shorter nucleotide example, retrieve the first 10,000 bases of contig `NW_026099572.1`:
+For a shorter nucleotide example, retrieve 10,000 bases of contig `NW_026099572.1`:
 
 ```bash
 blastdbcmd \
   -db DvitifoliaeGenomeDB \
   -entry NW_026099572.1 \
-  -range 1-10000 \
+  -range 72542000-72552000 \
   -outfmt '%f' \
-  -out NW_026099572.1_1-10000.fasta
+  -out NW_026099572.1_subset.fasta
 ```
 
 Verify that both query files contain a FASTA identifier and sequence data:
 
 ```bash
 head XP_050524263.1.fasta
-head NW_026099572.1_1-10000.fasta
+head NW_026099572.1_subset.fasta
 ```
 
 For larger searches, submit a SLURM job with an explicit CPU and memory request rather than relying on an interactive session.
@@ -378,9 +378,9 @@ Search the extracted 10-kb *D. vitifoliae* region against the *V. vinifera* geno
 
 ```bash
 blastn \
-  -query NW_026099572.1_1-10000.fasta \
+  -query NW_026099572.1_subset.fasta \
   -db VviniferaGenomeDB \
-  -out NW_026099572.1_1-10000_VviniferaGenomeDB_hits.tsv \
+  -out NW_026099572.1_subset_VviniferaGenomeDB_hits.tsv \
   -outfmt '6 qseqid sseqid pident length qstart qend sstart send evalue bitscore qcovs stitle' \
   -evalue 1e-5 \
   -max_target_seqs 10 \
@@ -390,8 +390,8 @@ blastn \
 Inspect the result count and first alignments:
 
 ```bash
-wc -l NW_026099572.1_1-10000_VviniferaGenomeDB_hits.tsv
-head NW_026099572.1_1-10000_VviniferaGenomeDB_hits.tsv
+wc -l NW_026099572.1_subset_VviniferaGenomeDB_hits.tsv
+head NW_026099572.1_subset_VviniferaGenomeDB_hits.tsv
 ```
 
 The output columns used in all three searches are:

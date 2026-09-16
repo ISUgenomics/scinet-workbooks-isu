@@ -20,7 +20,7 @@ applications:
 overview: [objectives, applications]
 
 questions:
-  - question: "Which `-dbtype` value should be used for amino acid sequences?"
+  - question: "Which `-dbtype` should be used for database construction with amino acid sequences?"
     qid: 1
     answers:
       - nucl
@@ -28,7 +28,7 @@ questions:
     answer: 2
     solution: "Protein sequences require `-dbtype prot`."
 
-  - question: "Which `-dbtype` value should be used for genomic DNA?"
+  - question: "Which `-dbtype` should be used for database construction with genomic DNA?"
     qid: 2
     answers:
       - nucl
@@ -38,11 +38,11 @@ questions:
 
   - question: "Why is `-parse_seqids` useful?"
     qid: 3
-    solution: "It stores parsed sequence identifiers in the database, allowing records to be retrieved later by accession or identifier with `blastdbcmd`."
+    solution: "It stores parsed sequence identifiers in the database, allowing records to be retrieved later by fasta header with `blastdbcmd`."
 
   - question: "What should be supplied to the BLAST `-db` option?"
     qid: 4
-    solution: "Supply the database prefix given to `makeblastdb -out`, not the name of an individual index file."
+    solution: "Supply the database prefix given to `makeblastdb -out`, not the name of each individual index file."
 
   - question: "How can you inspect the type, number of sequences, and total length of a BLAST database?"
     qid: 5
@@ -57,7 +57,7 @@ updated: 2026-08-11
 
 ## Overview
 
-BLAST searches can use public databases maintained by the National Center for Biotechnology Information (NCBI) or custom databases built from locally available sequences. A custom database is useful when its sequences are unpublished, organism-specific, newly assembled, or curated for a particular project.
+BLAST searches can use public databases maintained by the National Center for Biotechnology Information (NCBI) or custom databases built from locally available sequences. A custom database is relevant in nearly every othe case, like when sequences are unpublished, organism-specific, newly assembled, or curated for a particular project.
 
 In this tutorial, you will download two reference genomes and their predicted proteomes, build nucleotide and protein BLAST databases, inspect and retrieve database records, and run three types of sequence-similarity search.
 
@@ -72,7 +72,7 @@ Before beginning, you should be comfortable with:
 * recognizing FASTA-formatted nucleotide and protein sequences; and
 * using software modules on SCINet.
 
-This tutorial downloads two genomes and two predicted proteomes. Make sure your working location has adequate temporary storage. Record the download sizes and software version when documenting an analysis that must be reproduced later.
+This tutorial downloads two genomes and two predicted proteomes. Make sure your working location has adequate temporary storage. 
 
 ## Getting Started
 
@@ -326,7 +326,7 @@ For larger searches, submit a SLURM job with an explicit CPU and memory request 
 
 ## 8. Search a genome with `tblastn`
 
-Use the extracted *D. vitifoliae* protein as a query against the translated *V. vinifera* genome database:
+Use the extracted *D. vitifoliae* protein as a query against the 6-frame-translated *V. vinifera* genome database:
 
 ```bash
 tblastn \
@@ -411,7 +411,7 @@ The output columns used in all three searches are:
 
 ## 11. Rebuild a database after changing its FASTA file
 
-BLAST databases do not update automatically when the source FASTA file changes. After adding, removing, or editing sequences, run `makeblastdb` again. Using a new prefix will preserve the previous database.
+BLAST databases do not update automatically when the source FASTA file changes. After adding, removing, or editing sequences, run `makeblastdb` on the new FASTA file. Using a new prefix will preserve the previous database.
 
 ```bash
 makeblastdb \
@@ -456,7 +456,7 @@ makeblastdb \
   -out DATABASE_PREFIX
 ```
 
-Verify the result with:
+Verify the database information with:
 
 ```bash
 blastdbcmd -db DATABASE_PREFIX -info

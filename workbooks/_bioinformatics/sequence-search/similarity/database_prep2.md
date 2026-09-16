@@ -72,7 +72,7 @@ Before beginning, you should be comfortable with:
 * recognizing FASTA-formatted nucleotide and protein sequences; and
 * using software modules on SCINet.
 
-This tutorial downloads two genomes and two predicted proteomes. Make sure your working location has adequate temporary storage. 
+This tutorial downloads two genomes and two predicted proteomes: *Vitis vinifera* (common grape vine) and its pest Daktulosphaira vitifoliae* (Grape phylloxera). Make sure your working location has adequate temporary storage. 
 
 ## Getting Started
 

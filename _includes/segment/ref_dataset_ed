@@ -7,6 +7,15 @@ This dataset comes from [NCBI BioProject PRJNA348194](https://www.ncbi.nlm.nih.g
 |---|---|---|---|
 | WT | SRR4420293_1.fastq.gz<br>SRR4420293_2.fastq.gz | SRR4420294_1.fastq.gz<br>SRR4420294_2.fastq.gz | SRR4420295_1.fastq.gz<br>SRR4420295_2.fastq.gz |
 | atrx-1 | SRR4420296_1.fastq.gz<br>SRR4420296_2.fastq.gz | SRR4420297_1.fastq.gz<br>SRR4420297_2.fastq.gz | SRR4420298_1.fastq.gz<br>SRR4420298_2.fastq.gz |" %}
+
+{%- when "arabidopsis_prjna1047140" %}
+This dataset comes from [NCBI BioProject PRJNA1047140](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1047140) and the related [SRA study SRP475149](https://www.ncbi.nlm.nih.gov/sra/SRP475149). It contains nine *Arabidopsis thaliana* Col-0 RNA-seq samples: three untreated controls and three biological replicates each after `20 mg/L` PFOS exposure for `3` or `6` hours. Ten seedlings were pooled per biological replicate, and libraries were sequenced as `150 bp` [paired-end](/bioinformatics/resources/nomenclature#read-type-and-length) Illumina reads on a HiSeq 2000, providing 2 files per sample.
+
+{% include table content="| Treatment | replicate 1 | replicate 2 | replicate 3 |
+|---|---|---|---|
+| Control | SRR27003613_1.fastq.gz<br>SRR27003613_2.fastq.gz | SRR27003612_1.fastq.gz<br>SRR27003612_2.fastq.gz | SRR27003611_1.fastq.gz<br>SRR27003611_2.fastq.gz |
+| PFOS `3 h` | SRR27003610_1.fastq.gz<br>SRR27003610_2.fastq.gz | SRR27003609_1.fastq.gz<br>SRR27003609_2.fastq.gz | SRR27003608_1.fastq.gz<br>SRR27003608_2.fastq.gz |
+| PFOS `6 h` | SRR27003607_1.fastq.gz<br>SRR27003607_2.fastq.gz | SRR27003606_1.fastq.gz<br>SRR27003606_2.fastq.gz | SRR27003605_1.fastq.gz<br>SRR27003605_2.fastq.gz |" %}
 {%- when "ecoli_prjna944578" %}
 This dataset comes from [NCBI BioProject PRJNA944578](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA944578), using the direct RNA sequencing experiment [SRX19697903](https://www.ncbi.nlm.nih.gov/sra/SRX19697903). It contains one Oxford Nanopore MinION run from *E. coli* K-12 MG1655, produced as [single-end](/bioinformatics/resources/nomenclature#read-type-and-length) native RNA [long reads](/bioinformatics/resources/nomenclature#read-type-and-length), hence we have 1 file per run.
 

@@ -1507,11 +1507,11 @@ Use the [QC results](#how-to-extract-qc-metrics) to decide whether any additiona
 
 {% include alert class="tip" content="At this stage, use the QC results to decide whether the reads show a specific problem that trim or correct is designed to address.
 - Always use `summary`, because it helps you inspect what the basecaller produced. *See [Run `dorado summary`](#run-dorado-summary)*
-- Use `trim` only when adapters or primers are confirmed to remain in the basecalled reads.
-- Use `correct` only when the downstream analysis specifically benefits from error-corrected reads; it is not a routine QC step.
+- Use [dorado trim](#dorado-trim) only when adapters or primers are confirmed to remain in the basecalled reads.
+- Use [dorado correct](#dorado-correct) only when the downstream analysis specifically benefits from error-corrected reads; it is not a routine QC step.
 "%}
 
-{% include alert class="warning" title="Do not force all Dorado subcommands into one run" content="`summary`, `trim`, and `correct` are **not** a required sequence. Use them selectively. In this reads-QC module, the main default step is `summary`; stronger post-basecalling cleanup should be justified by visible evidence and the downstream analysis plan." %}
+{% include alert class="warning" title="Do not force all Dorado subcommands into one run" content="`summary`, `trim`, and `correct` are **not** a required sequence. Use them selectively. In the ONT reads QC, the main default step is `summary`; stronger post-basecalling cleanup should be justified by visible evidence and the downstream analysis plan." %}
 
 <div class="process-list ul" markdown='1'>
 
@@ -1593,7 +1593,7 @@ Run correction directly on basecalled reads in `FASTQ` format.
 dorado correct reads.fastq > corrected_reads.fasta
 ```
 
-dorado correct accepts `FASTQ` input and outputs corrected reads in `FASTA` format. The correction workflow is computationally intensive and is designed to use substantial CPU, memory, and typically GPU resources.
+`dorado correct` accepts `FASTQ` input and outputs corrected reads in `FASTA` format. The correction workflow is computationally intensive and is designed to use substantial CPU, memory, and typically GPU resources.
 
 <details markdown="1"><summary>Optional arguments</summary>
 
@@ -1624,14 +1624,14 @@ dorado correct reads.fastq --from-paf overlaps.paf > corrected_reads.fasta
 
 If the remaining questions are about read quality, length distribution, or retained yield, continue to [Long-read ONT quality check with NanoPlot](/bioinformatics/reads-qc/long-read/ont/qc_nanoplot).
 
-If you still need ONT-specific or signal-aware preprocessing, explore other tools in the [Dorado suite](#load-dorado-module).
+If you still need ONT-specific or raw signal-aware preprocessing, explore other tools in the [Dorado suite](#load-dorado-module).
 
 </div>
 
 
 ## FAQ and troubleshooting
 
-Use these quick checks if your input format, model download, or CPU run behavior is unclear.
+Use these quick checks to troubleshoot input format, model download, or CPU run issues.
 
 <div class="usa-accordion" data-allow-multiple>
 

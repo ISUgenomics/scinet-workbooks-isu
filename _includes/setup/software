@@ -1,0 +1,28 @@
+{%- assign tool_key = include.tool_key -%}
+{%- assign tool_meta = page.tools[tool_key] -%}
+{%- assign tool_name = include.tool | default: tool_meta.name | default: page.tool | default: "tool" -%}
+{%- assign exec_name = include.exec | default: tool_meta.exec | default: tool_name -%}
+{%- assign software_root = include.root | default: "/software/el9/apps" -%}
+{%- assign tool_path = include.path | default: software_root -%}
+{%- assign tool_version = include.version | default: '' -%}
+{%- assign requirements = include.required | default: '' -%}
+
+<div class="margin-y-2" markdown="1">
+
+The `{{ tool_name }}` is available under `{{ software_root }}`. The executable `{{ exec_name }}` may be nested under a tool and version directory.
+
+Confirm the executable path:
+```bash
+find "{{ tool_path }}" -type f -name "{{ exec_name }}" -print
+```
+
+Set the `TOOL_PATH` shell variable for selected tool version and add it to your `PATH`:
+```bash
+TOOL_PATH="{{ tool_path }}{% if tool_version %}/{{ tool_version }}{% endif %}"
+export PATH="${TOOL_PATH}:$PATH"
+```
+{% if include.required != '' %}
+{{ requirements }}
+{% endif %}
+
+</div>

@@ -1,0 +1,58 @@
+<ol>
+<li markdown="1">In the top navigation bar, select **Interactive Apps** and choose **Desktop**.
+
+<details class="margin-left-2 margin-top-0"><summary class="text-base"><i>see a screenshot</i></summary>
+<img src="{{ '/contribute/assets/desktop_interactive_apps.png' | relative_url }}" alt="Interactive Apps menu with Desktop selected">
+</details>
+</li>
+
+<li markdown="1">Set the session parameters: account, queue, number of hours, and screen resolution. The default values should be sufficient. Click **Launch** and wait until the session is active.
+
+<details class="margin-left-2 margin-top-0"><summary class="text-base"><i>see a screenshot</i></summary>
+<img src="{{ '/contribute/assets/desktop_session_parameters.png' | relative_url }}" alt="Desktop session settings for account, queue, hours, and screen resolution">
+</details>
+</li>
+
+<li markdown="1">Click **Launch Desktop** to open the graphical desktop in a new browser view.
+
+<details class="margin-left-2 margin-top-0"><summary class="text-base"><i>see a screenshot</i></summary>
+<img src="{{ '/contribute/assets/desktop_launch.png' | relative_url }}" alt="Active Desktop session page with the Launch Desktop button">
+</details>
+</li>
+
+<li markdown="1">Double-click the **File System** icon and open the `{{ include.root | default: "90daydata" }}` folder.
+
+<details class="margin-left-2 margin-top-0"><summary class="text-base"><i>see a screenshot</i></summary>
+<img src="{{ '/contribute/assets/desktop_file_system.png' | relative_url }}" alt="SCINet graphical desktop with the File System icon">
+<img src="{{ '/contribute/assets/desktop_90daydata.png' | relative_url }}" alt="File System window open to the 90daydata folder">
+</details>
+</li>
+
+{% if include.path %}
+<li markdown="1">In the path bar at the top of the browser window, place the cursor at the end of the current path and enter `{{ include.path }}`. Press Enter to navigate to the specified path.
+
+<details class="margin-left-2 margin-top-0"><summary class="text-base"><i>see a screenshot</i></summary>
+{% if include.root == "reference" %}
+<img src="{{ '/contribute/assets/desktop_typed_path_reference.png' | relative_url }}" alt="File System path bar with the reference dataset directory entered">
+{% else %}
+<img src="{{ '/contribute/assets/desktop_typed_path.png' | relative_url }}" alt="File System path bar with the shared user directory entered">
+{% endif %}
+</details>
+</li>
+{% endif %}
+
+<li markdown="1">Navigate through the nested folders until you reach the `{{ include.folder }}` folder.
+</li>
+
+<li markdown="1">Double-click `{{ include.file }}`. The file opens automatically in a pop-up window.
+
+{% unless include.noimg %}
+<details class="margin-left-2 margin-top-0"><summary class="text-base"><i>see a screenshot</i></summary>
+<img src="{{ '/contribute/assets/desktop_file_open.png' | relative_url }}" alt="File browser showing the FastQC HTML report file">
+</details>
+{% endunless %}
+</li>
+
+<li markdown="1">{{ include.next_step | default: "Now, you can review a file content in graphical interface." }}
+</li>
+</ol>

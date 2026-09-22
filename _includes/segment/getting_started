@@ -1,0 +1,11 @@
+<ol markdown="1">
+<li markdown="1">
+{% include setup/ood/access %}
+</li>
+<li markdown="1">
+Open the shell in OOD. {% include setup/ood/shell_access %}
+</li>
+<li markdown="1">
+{% include setup/compute_node note="true" time=include.time cores=include.cores tasks=include.tasks cpus_per_task=include.cpus_per_task mem=include.mem %}
+</li>
+</ol>

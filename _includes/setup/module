@@ -1,0 +1,47 @@
+<div class="margin-y-2" markdown="1">
+
+{%- assign tool_key = include.tool_key -%}
+{%- assign tool_meta = page.tools[tool_key] -%}
+{%- assign tool_name = include.tool | default: tool_meta.name | default: page.tool | default: "tool" -%}
+{%- assign exec_name = include.exec | default: tool_meta.exec -%}
+{%- assign module = include.module | default: tool_meta.module | default: page.module | default: exec_name -%}
+{%- assign version = include.version | default: tool_meta.version | default: nil -%}
+{%- assign module_query = include.module_query | default: tool_key -%}
+{%- assign known_module = include.known | default: "false" -%}
+
+{%- unless known_module == "true" %}
+Check whether `{{ exec_name }}` is already available and whether SCINet provides it through the module system:
+{%- else %}
+SCINet provides `{{ tool_name }}` as a module:
+{%- endunless %}
+
+```bash
+module avail {{ module_query }}
+module spider {{ module_query }}  # search all module paths
+```
+
+{%- if module.atlas or module.ceres %}
+{% if module.atlas %}
+**Atlas**
+
+```bash
+module load {{ module.atlas }}{% if version.atlas %}/{{ version.atlas }}{% endif %}
+```
+{% endif %}
+{% if module.ceres %}
+**Ceres**
+
+```bash
+module load {{ module.ceres }}{% if version.ceres %}/{{ version.ceres }}{% endif %}
+```
+{% endif %}
+{%- else %}
+```bash
+module load {{ module }}{% if version %}/{{ version }}{% endif %}
+```
+{%- endif %}
+
+{% if include.note != "false" %}
+{% include alert class="highlighted" content="The available tool version may differ from the version originally used to develop this tutorial. For reproducible project work, <b>load a specific module version and record it</b> in your project documentation." %}
+{% endif %}
+</div>

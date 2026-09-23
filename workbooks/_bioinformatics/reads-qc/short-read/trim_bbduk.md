@@ -241,7 +241,7 @@ Per sequence GC content                           0          2                  
 
 ![FastQC Report: Basic Statistics for read 2 of sample SRR27003609](./assets/img/fastqc-SRR27003609_2-stats.png)
 
-*This report shows read 2 of sample `SRR27003609`. Its summary reports `FAIL` for [Per base sequence content](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-module-base-content-accordbutton), [Sequence Duplication Levels](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-module-duplication-accordbutton), [Adapter Content](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-module-adapter-accordbutton), and [Per sequence GC content](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-module-gc-content-accordbutton), plus `WARN` for [Overrepresented sequences](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-module-overrepresented-accordbutton). The first three modules fail across all samples. We will review these patterns across the dataset before deciding what to remove. The shared **Adapter Content** failure provides the clearest target for `BBDUK` adapter trimming, while additional filtering may require module-specific evidence.*
+*This report shows read 2 of sample `SRR27003609`. Its summary reports `FAIL` for [Per base sequence content](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-module-base-content), [Sequence Duplication Levels](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-module-duplication), [Adapter Content](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-module-adapter), and [Per sequence GC content](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-module-gc-content), plus `WARN` for [Overrepresented sequences](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-module-overrepresented). The first three modules fail across all samples. We will review these patterns across the dataset before deciding what to remove. The shared **Adapter Content** failure provides the clearest target for `BBDUK` adapter trimming, while additional filtering may require module-specific evidence.*
 
 </details>
 </li>
@@ -715,7 +715,7 @@ module load fastqc
 fastqc --threads 4 --outdir "${QC_DIR}" "${OUTDIR}"/*.bbduk.fastq.gz
 ```
 
-{% include alert class="highlighted" content="For larger projects (more samples) prefer running post-trimming QC with [FastQC using SLURM batch job](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-slurm-all-accordbutton) to avoid session timeout before the task completes." %}
+{% include alert class="highlighted" content="For larger projects (more samples) prefer running post-trimming QC with [FastQC using SLURM batch job](/bioinformatics/reads-qc/short-read/qc_fastqc#fastqc-slurm-all) to avoid session timeout before the task completes." %}
 </li>
 
 <li markdown="1">Confirm that FastQC produced one HTML report and one ZIP archive for each cleaned FASTQ file:
@@ -798,7 +798,8 @@ BBDUK removed the detected adapter and terminal poly-G sequences while retaining
 
 Record the cleanup in the project's `README` file. This record makes the processing reproducible and shows exactly which sequences were trimmed or filtered.
 
-## short-read trimming with BBDU
+```text
+## short-read trimming with BBDUK
 
 | Field | Value | Notes |
 | --- | --- | --- |
@@ -809,6 +810,8 @@ Record the cleanup in the project's `README` file. This record makes the process
 | Adapter reference | `{{ page.tutorial.adapter_path }}` | |
 | BBDUK options | `ktrim=r`, `trimpolyg=10`, `k=23`, `mink=11`, `hdist=1`, `tpe`, `tbo`, `qtrim=rl`, `trimq=20`, `minlen=36`, `threads=4` | |
 | Workdir | Ceres: `{{ page.tutorial.root_practice }}/{{ page.tutorial.workdir }}` | |
+```
+
 
 Proceed with all nine cleaned samples for downstream alignment and expression analysis. 
 

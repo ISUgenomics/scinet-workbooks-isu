@@ -147,7 +147,7 @@ overview: [objectives, applications, terminology, materials]
 
 BLAST searches can use public databases maintained by the National Center for Biotechnology Information (NCBI) or custom databases built from locally available sequences. A custom database is useful when sequences are unpublished, organism-specific, newly assembled, or curated for a particular project.
 
-In this tutorial, you will download two reference genomes and their predicted proteomes: *Vitis vinifera* (common grapevine) and its pest *Daktulosphaira vitifoliae* (grape phylloxera). Using these files, you will build nucleotide and protein BLAST databases, inspect and retrieve database records, and run three types of sequence-similarity search.
+In this tutorial, you will download two reference genomes and their predicted proteomes: *Vitis vinifera* (common grapevine) and its pest *Daktulosphaira vitifoliae* (grape phylloxera). Using these files, you will build nucleotide and protein BLAST databases to inspect and retrieve database records.
 
 {% include overviews %}
 

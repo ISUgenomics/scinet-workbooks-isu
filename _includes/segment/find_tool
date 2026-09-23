@@ -1,0 +1,44 @@
+{%- assign tool_name = include.tool | default: page.tool | default: "tool" -%}
+{%- assign exec_name = include.exec | default: "tool" -%}
+{%- assign env_name = include.env | default: "env_tool" -%}
+{%- assign env_base = "/reference/workbook" -%}
+{%- assign env_root = include.env_root | default: "<subject_area>" -%}
+{%- assign user_env_root = include.user_env_root | default: "/90daydata/shared/$USER/envs" -%}
+{%- assign container_base = "/reference/containers/" -%}
+{%- assign controls_id = include.controls | default: tool_name | slugify | append: "-find-tool-acc" -%}
+
+<div class="usa-accordion" data-allow-multiple>
+{% include accordion title="Tools can be found in modules, containers or virtual environments" class="note" icon=true controls=controls_id %}
+<div id="{{ controls_id }}" class="accordion_content" style="font-size: 80%;" markdown='1' hidden>
+
+Several setup routes are common on SCINet HPC:
+- Some tools may already be on your PATH; check with `which <tool>` and use them directly if available.
+```bash
+which {{ exec_name }}
+```
+- Many tools are stored at `/software/el9/apps/`. Search this path and add useful tools to your `$PATH`:
+```bash
+ls /software/el9/apps/ | grep "bbtools"     # search for the tool or package name, e.g. "bbtools"
+find /software/el9/apps/bbtools -type f -name "bbduk.sh" -print     # search nested dirs for an executable or script, e.g., "bbduk.sh"
+
+export PATH="/software/el9/apps/bbtools/39.01:$PATH"    # add to path in a current shell
+# optionally, add it permanently to your config 
+echo 'export PATH="/software/el9/apps/bbtools/39.01:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+- Check whether SCINet provides the `{{ tool_name }}` as a module: 
+```bash
+module spider {{ exec_name }}
+module avail {{ exec_name }}
+module load {{ exec_name }}     # load the module, if it is available
+```
+- If `{{ tool_name }}` is not available as a module, check whether it is available as a container image:
+```bash
+ls {{ container_base }}     # list available containers
+module load apptainer
+apptainer exec {{ container_base }}<tool>/<version>/<image>.simg {{ exec_name }} --help
+```
+- Use the ready-made environment, if it is available under `{{ env_base }}/{{ env_root }}/env/venv/` or `{{ env_base }}/{{ env_root }}/env/conda/`.
+- Otherwise, if `{{ tool_name }}` is not available yet, install it only inside a user-managed environment such as `{{ user_env_root }}/{{ env_name }}` or project space (`/project/<project_name>/software/envs/{{ env_name }}`), not in `/home`.
+</div>
+</div>

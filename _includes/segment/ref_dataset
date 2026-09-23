@@ -1,0 +1,18 @@
+{%- assign controls_id = include.controls | default: "ref-dataset-acc" -%}
+<div id="{{ controls_id }}-wrapper" class="usa-accordion">
+
+{% include accordion title="Example datasets are accessible in /reference/workbook" class="note" icon=true controls=controls_id %}
+<div class="accordion_content" id="{{ controls_id }}" markdown='1' hidden>
+
+The `/reference/workbook/` location stores example datasets and reference results prepared for workbook tutorials. 
+These files are shared, centrally maintained, and available in **read-only** mode so that all users can work from the same inputs without modifying them.
+
+For most tutorials, it is better to read data directly from `/reference/workbook/` than to copy it into your own workspace:
+- it avoids unnecessary duplication in `/90daydata/shared/$USER/`
+- it reduces storage use in temporary practice space
+- it keeps the tutorial inputs consistent across users and sessions
+
+Create a local copy only when a tutorial explicitly requires one, for example when files must be edited, renamed, or rewritten in place.
+
+</div>
+</div>

@@ -1,0 +1,5 @@
+<div markdown="1">
+
+Reference outputs for comparison are available at `{{ include.reference_results_path }}`.
+
+</div>

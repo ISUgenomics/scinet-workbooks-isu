@@ -1,0 +1,19 @@
+{%- assign tool_key = include.tool_key | default: include.tool -%}
+{%- assign tools = site.data.tools.tools -%}
+{%- assign tool = tools[tool_key] -%}
+{%- if tool -%}
+  {%- capture tool_content -%}
+{{ tool.description }}
+
+* **Category:** {{ tool.cat }}
+* **Language:** {{ tool.lang }}
+* **Availability:** {{ tool.avail }}
+{%- if tool.url %}
+* **Documentation:** [{{ tool.url }}]({{ tool.url }})
+{%- endif %}
+{%- if tool.related %}
+* **Related:** {{ tool.related | join: ", " }}
+{%- endif %}
+  {%- endcapture -%}
+{% include components/summary.html title=tool.name content=tool_content %}
+{%- endif -%}

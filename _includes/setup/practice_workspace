@@ -1,0 +1,15 @@
+<div markdown="1">
+
+Regardless of the SCINet cluster you are using (`Atlas` or `Ceres`), use `/90daydata/shared/$USER/` for hands-on practice in this tutorial.
+
+{% include setup/mkdir dir=include.workdir %}
+
+{%- if include.subdirs %}
+Create the main working subdirectories for this tutorial:
+
+```bash
+mkdir -p {{ include.subdirs }}
+```
+{%- endif %}
+
+</div>

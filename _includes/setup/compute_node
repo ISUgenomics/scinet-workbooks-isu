@@ -1,0 +1,10 @@
+<div markdown="1">
+
+Start an interactive session on a *compute* node. Avoid running large-scale processing directly on a *login* node.
+```bash
+srun -A <project_name> -t {{ include.time | default: page.compute_time | default: "01:00:00" }} -n {{ include.tasks | default: "1" }}{% if include.cpus_per_task or include.mem %} --cpus-per-task={{ include.cpus_per_task | default: include.cores | default: page.compute_cores | default: "2" }}{% endif %}{% if include.mem %} --mem={{ include.mem }}{% endif %} --pty bash
+```
+Replace `<project_name>` with a valid SCINet allocation account available to you. 
+{%- if include.note == "true" %} {% include segment/find_projects %} {% endif %}
+
+</div>

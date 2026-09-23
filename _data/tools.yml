@@ -1,0 +1,9 @@
+tools:
+  blast:
+    name: NCBI BLAST+
+    cat: Bioinformatics
+    lang: C++
+    avail: module
+    url: https://blast.ncbi.nlm.nih.gov/doc/blast-help/
+    description: Build and search sequence databases with BLAST programs that identify local similarities between nucleotide or protein sequences.
+    related: [sequence alignment, similarity search, nucleotide, protein]

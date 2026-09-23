@@ -46,6 +46,7 @@ tutorial:
   root_practice: /90daydata/shared/$USER
   workdir: tutorials/long_reads_qc/dorado_dna
   data_path: /reference/workbook/bioinformatics/dataset/reads_long/ont/dna_r10.4.1_e8.2_400bps_5khz
+  pilot_sample: dna_r10.4.1_e8.2_400bps_5khz-FLO_PRO114M-SQK_LSK114_XL-5000.pod5
   sample: dna_r10.4.1_e8.2_400bps_5khz-FLO_PRO114M-SQK_MLK114_96_XL-5000.pod5
   dataset: ont_dna_dorado_pod5
 
@@ -53,7 +54,9 @@ tutorial2:
   root_practice: /90daydata/shared/$USER
   workdir: tutorials/long_reads_qc/dorado_dna
   data_path: /reference/workbook/bioinformatics/dataset/reads_long/ont/monkeypox_SQB000004/00_raw_data
-  sample: 10244_MPOX-65.pod5
+  scale_sample: 10244_MPOX-67.pod5
+  scale_read_ids: 10244_MPOX-67_ids
+  scale_read_ids_5: 10244_MPOX-67_ids_5
   dataset: mpox_sqb000004
 
 objectives:
@@ -247,7 +250,7 @@ Use this syntax for the [simplex basecalling](https://software-docs.nanoporetech
 
 ```bash
 # ligation DNA 
-INPUT="${DATA_DIR}/dna_r10.4.1_e8.2_400bps_5khz-FLO_PRO114M-SQK_LSK114_XL-5000.pod5"
+INPUT="${DATA_DIR}/{{ page.tutorial.pilot_sample }}"
 
 dorado basecaller hac "${INPUT}" > dna_ligation_reads.bam
 ```
@@ -287,7 +290,7 @@ By default, Dorado trims detected barcode, adapter, and primer sequence during b
 
 ```bash
 # multiplexed ligation DNA 
-INPUT="${DATA_DIR}/dna_r10.4.1_e8.2_400bps_5khz-FLO_PRO114M-SQK_MLK114_96_XL-5000.pod5"
+INPUT="${DATA_DIR}/{{ page.tutorial.sample }}"
 
 dorado basecaller hac "${INPUT}" --kit-name SQK-MLK114-96-XL > dna_multiplex_trimmed.bam
 ```
@@ -386,7 +389,7 @@ nano dorado_dna_batch.sh
     module load dorado
     dorado -v
 
-    INPUTS={{ page.tutorial.data_path }}/dna_r10.4.1_e8.2_400bps_5khz-FLO_PRO114M-SQK_LSK114_XL-5000.pod5
+    INPUTS={{ page.tutorial.data_path }}/{{ page.tutorial.pilot_sample }}
     WORKDIR={{ page.tutorial.root_practice }}/{{ page.tutorial.workdir }}
 
     dorado basecaller hac "${INPUTS}" > "${WORKDIR}/dna_ligation_reads.bam"
@@ -550,7 +553,7 @@ cd {{ page.tutorial2.dataset }}
 
 ### Estimate resources needed
 
-See how the input files for this dataset are larger than the small trial file used in Part 2. The largest file, `10244_MPOX-67.pod5` (40M), is approximately 2,500 times larger than the `SQK_LSK114_XL` ligation DNA file (16K). Datasets for other species can easily span gigabytes per `POD5` file and hundreads of files in a dataset (see example human dataset [PAW79146](https://42basepairs.com/browse/s3/ont-open-data/giab_2025.01/flowcells/HG001/PAW79146/pod5)). 
+See how the input files for this dataset are larger than the small trial file `SQK_LSK114_XL-5000.pod5` used in Part 2. The largest file, `{{ page.tutorial2.scale_sample }}` (40M), is approximately 2,500 times larger than the `SQK_LSK114_XL` ligation DNA file (16K). Datasets for other species can easily span gigabytes per `POD5` file and hundreds of files in a dataset (see example human dataset [PAW79146](https://42basepairs.com/browse/s3/ont-open-data/giab_2025.01/flowcells/HG001/PAW79146/pod5)).
 
 <div class="highlighted highlighted--highlighted"><div class="highlighted__body" markdown="1">
 Because datasets vary widely, no fixed combination of CPU/GPU, memory, and runtime applies to every dataset; estimate requirements by testing most demanding reads in a trial interactive run on a computing node.
@@ -638,7 +641,7 @@ af6c7662-365b-4b6d-8dae-53e33bbc9baa
 
 - `read_counts`: one line per `POD5` file with its number of reads; read count helps estimate total per-file basecalling workload and runtime.
 - `3_longest.tsv`: the three longest raw-signal records from each `POD5` file, including `filename`, `read ID`, and `num_samples`; these indicate most-demanding memory requirements.
-- `10244_MPOX-67_ids`: IDs from a single file selected for trial; pass it to `dorado basecaller` with `-l, --read-ids` in the interactive run to test and optimize the required resources.
+- `{{ page.tutorial2.scale_read_ids }}`: IDs from a single file selected for trial; pass it to `dorado basecaller` with `-l, --read-ids` in the interactive run to test and optimize the required resources.
 
 ### Run pilot test(s) in the interactive session
 
@@ -652,8 +655,8 @@ cd test_run
 echo $DATASET     # confirm dataset path
 ls $DATASET       # confirm that input files exists
 
-INPUT=${DATASET}/10244_MPOX-67.pod5
-time memory dorado basecaller hac "${INPUT}" -v -l ../10244_MPOX-67_ids > test_1.bam
+INPUT=${DATASET}/{{ page.tutorial2.scale_sample }}
+time memory dorado basecaller hac "${INPUT}" -v -l ../{{ page.tutorial2.scale_read_ids }} > test_1.bam
 ```
 
 <details class="padding-x-2 bg-success-lighter"><summary><i>command log (run @ceres)</i></summary>
@@ -686,12 +689,12 @@ sys     0m41.758s
 [This run](#run-pilot-tests-in-the-interactive-session) completed successfully in ~3 minutes and used ~28GB RAM at peak on Ceres (using CPU only) within an interactive session set with `-n 1 --cpus-per-task=4 --mem=32G`. When tracking the progress of `[debug] Load reads...` you could notice that all reads are preloaded at once, that means just the 3 reads almost reached the avaialble `mem=32G` in the session. 
 
 {% capture exercise_1 %}
-Repeat the [Count the number and length of reads](#count-the-number-and-length-of-reads) step, this time selecting the five longest reads into `5_longest.tsv` and writing their read IDs to `10244_MPOX-67_ids_5`. Then rerun the Dorado basecaller command for the 5 IDs and check whether the run completes successfully. <br>**TIP:** *Compare the runtime and peak memory with the three-read pilot run.*
+Repeat the [Count the number and length of reads](#count-the-number-and-length-of-reads) step, this time selecting the five longest reads into `5_longest.tsv` and writing their read IDs to `{{ page.tutorial2.scale_read_ids_5 }}`. Then rerun the Dorado basecaller command for the 5 IDs and check whether the run completes successfully. <br>**TIP:** *Compare the runtime and peak memory with the three-read pilot run.*
 
 <details markdown="1"><summary>SOLUTION</summary>
 
 ```bash
-time memory dorado basecaller hac "${INPUT}" -v -l ../10244_MPOX-67_ids_5 > test_2.bam
+time memory dorado basecaller hac "${INPUT}" -v -l ../{{ page.tutorial2.scale_read_ids_5 }} > test_2.bam
 ```
 <pre class="padding-x-2 bg-error-lighter"><small>[info] - downloading dna_r10.4.1_e8.2_400bps_hac@v6.0.0 with httplib
 [info] > Creating basecall pipeline
@@ -726,7 +729,7 @@ Repeat an exercise.  <br>*Did your run complete successfully this time?*
 
 ```bash
 export DORADO_CPU_RUNNERS=4
-time memory dorado basecaller hac "${INPUT}" -v -l ../10244_MPOX-67_ids_5 > test_3.bam
+time memory dorado basecaller hac "${INPUT}" -v -l ../{{ page.tutorial2.scale_read_ids_5 }} > test_3.bam
 ```
 <pre class="padding-x-2 bg-success-lighter"><small>[info] - downloading dna_r10.4.1_e8.2_400bps_hac@v6.0.0 with httplib
 [info] > Creating basecall pipeline
@@ -858,7 +861,7 @@ walltime ≈ pilot_runtime × (reads_in_POD5 / benchmarked_reads)
 If this estimated walltime is too long for your project, start a new interactive session requesting more CPUs and memory, and repeat the pilot benchmark. 
 
 {% capture exercise_3 %}
-Repeat the run with five longest reads (IDs saved to `10244_MPOX-67_ids_5`) using a larger allocation in the interactive session, for example by doubling both CPUs and memory. 
+Repeat the run with five longest reads (IDs saved to `{{ page.tutorial2.scale_read_ids_5 }}`) using a larger allocation in the interactive session, for example by doubling both CPUs and memory.
 Test with automatic batch size to see whether additional resources improve runtime.
 
 **TIP:** *Match `DORADO_CPU_RUNNERS` to the new `--cpus-per-task` value. Start with the default batch size, then test `-b 32`, followed by 16 and 8 if runtime continues to decrease. Use pre-downloaded model.*
@@ -875,10 +878,10 @@ module load dorado   # load dorado module
 export DORADO_CPU_RUNNERS=8   # match requested cores 
 
 DATASET={{ page.tutorial2.data_path }}   
-INPUT=${DATASET}/10244_MPOX-67.pod5
+INPUT=${DATASET}/{{ page.tutorial2.scale_sample }}
 MODEL=/reference/workbook/bioinformatics/models/ont_models/dna_r10.4.1_e8.2_400bps_hac@v6.0.0
 
-time memory dorado basecaller ${MODEL} ${INPUT} -v -l ../10244_MPOX-67_ids_5 > test_4.bam 
+time memory dorado basecaller ${MODEL} ${INPUT} -v -l ../{{ page.tutorial2.scale_read_ids_5 }} > test_4.bam
 ```
 <pre class="padding-x-2 bg-success-lighter"><small>[info] Overriding CPU runners to 8
 [debug] - CPU calling: set num_cpu_runners to 8
@@ -1002,7 +1005,7 @@ export DORADO_CPU_RUNNERS=${SLURM_CPUS_PER_TASK}
 # EDIT values to match your project
 BS=16     # benchmarked batchsize
 MODEL=/reference/workbook/bioinformatics/models/ont_models/dna_r10.4.1_e8.2_400bps_hac@v6.0.0
-INPUTS=${INPUTS}     # or /path/to/sample.pod5 e.g., /reference/workbook/bioinformatics/dataset/reads_long/ont/monkeypox_SQB000004/00_raw_data/10244_MPOX-67.pod5
+INPUTS=${INPUTS}     # or /path/to/sample.pod5 e.g., /reference/workbook/bioinformatics/dataset/reads_long/ont/monkeypox_SQB000004/00_raw_data/{{ page.tutorial2.scale_sample }}
 WORKDIR=/90daydata/shared/$USER/tutorials/long_reads_qc/dorado_dna
 
 # ---------- NO EDITS BELOW ----------
@@ -1119,10 +1122,10 @@ export DORADO_CPU_RUNNERS=8   # match requested cores
 
 MODEL=/reference/workbook/bioinformatics/models/ont_models/dna_r10.4.1_e8.2_400bps_hac@v6.0.0
 DATASET={{ page.tutorial2.data_path }}   
-INPUT=${DATASET}/10244_MPOX-67.pod5
+INPUT=${DATASET}/{{ page.tutorial2.scale_sample }}
 REFERENCE=/reference/workbook/bioinformatics/dataset/ref_genome/monkeypox_virus_NC_063383/GCF_014621545.1_ASM1462154v1_genomic.fna
 
-time memory dorado basecaller ${MODEL} ${INPUT} -v -b 16 -l ../10244_MPOX-67_ids_5 --reference "${REFERENCE}" > test_aligned.bam 
+time memory dorado basecaller ${MODEL} ${INPUT} -v -b 16 -l ../{{ page.tutorial2.scale_read_ids_5 }} --reference "${REFERENCE}" > test_aligned.bam
 ```
 <pre class="padding-x-2 bg-success-lighter"><small>[info] Overriding CPU runners to 8
 [debug] - CPU calling: set num_cpu_runners to 8

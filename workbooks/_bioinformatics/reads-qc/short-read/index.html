@@ -179,11 +179,11 @@ Per-base quality reflects the confidence of individual base calls across the rea
 
 ### Adapter contamination
 
-Sequencing adapters are short synthetic sequences attached to DNA or cDNA fragments during library preparation so the fragments can bind to the flow cell and be sequenced. [Adapter contamination](/bioinformatics/resources/nomenclature#adapter-contamination) occurs when part of that synthetic sequence is still present in the reads. This can happen when the biological insert is shorter than the sequencing read, so the instrument reads through the fragment and into the adapter sequence, or when library preparation artifacts persist in the final data. Adapter contamination is one of the most common reasons to trim short reads before downstream analysis, especially when read-through occurs in short-insert libraries.
+Sequencing adapters are short synthetic sequences attached to DNA or cDNA fragments during library preparation so the fragments can bind to the flow cell and be sequenced. [Adapter contamination](/glossary) occurs when part of that synthetic sequence is still present in the reads. This can happen when the biological insert is shorter than the sequencing read, so the instrument reads through the fragment and into the adapter sequence, or when library preparation artifacts persist in the final data. Adapter contamination is one of the most common reasons to trim short reads before downstream analysis, especially when read-through occurs in short-insert libraries.
 
 ### Read length and layout
 
-Short-read datasets also need to be structurally consistent. A pipeline may expect reads in a specific [layout](/bioinformatics/resources/nomenclature#read-type), such as single-end or paired-end, and within a usable [length](/bioinformatics/resources/nomenclature#read-length) range. Preprocessing steps that break pairing, create many unpaired reads, or over-shorten the surviving reads can make later stages less reliable. To revisit how sequencing reads differ by type and size, see [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature#read-type-and-length).
+Short-read datasets also need to be structurally consistent. A pipeline may expect reads in a specific [layout](/bioinformatics/resources/nomenclature#read-type-and-length), such as single-end or paired-end, and within a usable length range. Preprocessing steps that break pairing, create many unpaired reads, or over-shorten the surviving reads can make later stages less reliable. To revisit how sequencing reads differ by type and size, see [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature#read-type-and-length).
 
 ### Duplication and overrepresented sequence
 

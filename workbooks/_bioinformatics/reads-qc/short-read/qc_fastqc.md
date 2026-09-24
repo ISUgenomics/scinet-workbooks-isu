@@ -314,7 +314,7 @@ squeue -u $USER
 ```
    
    <pre><small>   JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
-   21880008     ceres fastqc_a alex.bad  R       1:49      1 ceres20-mem-2
+   22002965     ceres fastqc_a alex.bad  R       1:49      1 ceres20-mem-2
    </small></pre>
 
    ```bash

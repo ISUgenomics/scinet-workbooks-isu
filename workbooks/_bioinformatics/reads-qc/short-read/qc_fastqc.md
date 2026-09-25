@@ -61,7 +61,7 @@ terms:
 
 materials:
   - "Example paired-end Arabidopsis `FASTQ` files for this tutorial are provided under `/reference/workbook/bioinformatics/dataset/reads_short/arabidopsis_PRJNA348194/00_raw_data/`."
-  - "Reference QC outputs for comparison are provided under `/reference/workbook/bioinformatics/dataset/reads_short/arabidopsis_PRJNA348194/reads_qc/fastqc/` and `/reference/workbook/bioinformatics/dataset/reads_short/arabidopsis_PRJNA348194/reads_qc/multiqc/`."
+  - "Reference QC outputs for comparison are provided under `/reference/workbook/bioinformatics/dataset/reads_short/arabidopsis_PRJNA348194/reads_qc/fastqc/`."
   - "Use `/90daydata/shared/$USER/` practice workspace so outputs stay in temporary user space."
 
 overview: [objectives, applications, terminology, materials]

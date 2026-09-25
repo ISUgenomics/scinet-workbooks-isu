@@ -93,8 +93,9 @@ terms:
     definition: Removal of technical adapter or primer sequences from basecalled reads before downstream analysis.
 
 materials:
-  - "Example ONT DNA `POD5` datasets are available under `/reference/workbook/bioinformatics/dataset/reads_long/ont`."
-  - "Use `/90daydata/shared/$USER/` as the practice workspace."
+  - "Demo ONT DNA `POD5` files are provided under `/reference/workbook/bioinformatics/dataset/reads_long/ont/dna_r10.4.1_e8.2_400bps_5khz/`."
+  - "The larger monkeypox ONT DNA `POD5` dataset is provided under `/reference/workbook/bioinformatics/dataset/reads_long/ont/monkeypox_SQB000004/00_raw_data/`."
+  - "Use `/90daydata/shared/$USER/` practice workspace so outputs stay in temporary user space."
 
 overview: [objectives, applications, terminology, materials]
 ---

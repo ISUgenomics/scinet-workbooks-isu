@@ -70,7 +70,8 @@ terms:
 
 materials:
   - "Example nine-sample Arabidopsis paired-end short-read inputs for this tutorial are provided under `/reference/workbook/bioinformatics/dataset/reads_short/arabidopsis_PRJNA1047140/00_raw_data/`."
-  - "Trimmed reads and corresponding QC reports are provided under `/reference/workbook/bioinformatics/dataset/reads_short/arabidopsis_PRJNA1047140/reads_trim/bbduk/`."
+  - "Reference trimmed reads are provided under `/reference/workbook/bioinformatics/dataset/reads_short/arabidopsis_PRJNA1047140/reads_trim/bbduk/`."
+  - "Reference post-trimming QC reports are provided under `/reference/workbook/bioinformatics/dataset/reads_short/arabidopsis_PRJNA1047140/reads_qc/fastqc/`."
   - "Use `/90daydata/shared/$USER/` practice workspace so outputs stay in temporary user space."
 
 overview: [objectives, applications, terminology, materials]

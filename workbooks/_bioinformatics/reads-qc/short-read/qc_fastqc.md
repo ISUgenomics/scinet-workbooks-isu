@@ -255,7 +255,7 @@ nano fastqc_batch.sh
     {% include accordion title="Estimate walltime for batch job" class="note" icon=true controls="fastqc-walltime-estimate" %}
     <div class="accordion_content" id="fastqc-walltime-estimate" markdown='1' hidden>
 
-    The interactive pilot processed one paired-end sample (two FASTQ files) in `2m14s`. To estimate walltime, divide the total number of FASTQ files by the number of avaialble threads. This gives the number of file groups processed one after another:
+    The interactive pilot processed one paired-end sample (two FASTQ files) in `2m14s`. To estimate walltime, divide the total number of FASTQ files by the number of available threads. This gives the number of file groups processed one after another:
     ```text
     n_groups = ceil(total_FASTQ_files / threads)
     walltime ≈ pilot_runtime × n_groups
@@ -446,7 +446,7 @@ for report in *_fastqc.zip; do
     unzip -p "${report}" "${report_dir}/summary.txt"
 done | tee fastqc_summary_all.txt
 ```
-<details class="padding-x-2 bg-success-lighter"><summary><i>command log (one sample showed only)</i></summary>
+<details class="padding-x-2 bg-success-lighter"><summary><i>command log (showing one sample only)</i></summary>
 
 <pre><small>=== SRR4420293_1_fastqc ===
 PASS    Basic Statistics                SRR4420293_1.fastq.gz
@@ -907,7 +907,7 @@ Compare the two mates within each sample first, then compare the same module acr
 " %}
 
 {% capture exercise_1 %}
-For arabidopsis_PRJNA348194 dataset, duplication and base-composition issues occur in both mates across all samples, while GC-content and overrepresented-sequence results affect only selected mates or samples, as showed in [Count the QC status flags](#count-the-qc-status-flags). Compare QC modules across HTML reports to decide whether one consistent preprocessing strategy is appropriate or whether an outlier needs separate investigation.
+For the arabidopsis_PRJNA348194 dataset, duplication and base-composition issues occur in both mates across all samples, while GC-content and overrepresented-sequence results affect only selected mates or samples, as shown in [Count the QC status flags](#count-the-qc-status-flags). Compare QC modules across HTML reports to decide whether one consistent preprocessing strategy is appropriate or whether an outlier needs separate investigation.
 
 <details markdown="1"><summary>SOLUTION</summary>
 
@@ -1118,15 +1118,13 @@ High duplication is present across the dataset. In transcriptomic dataset like t
 
 ### Decide on the next preprocessing step
 
-The FastQC modules analysis leads to these conclusions:
+The FastQC module analysis leads to these conclusions:
 
 - The per-base quality, adapter-content, and N-content plots show no broad quality, adapter, or ambiguous-base problem; routine quality or adapter trimming and N-based filtering should not be applied.
 - The early base-composition imbalance is consistent across the reports and stabilizes after the first several positions. It is more consistent with library-specific sequence composition than with a trimming problem, so those bases should not be removed.
 - The duplication plots show many repeated sequences across the transcriptomic samples. This can reflect abundant transcripts; deduplicate only when library metadata or UMI analysis indicates PCR duplication.
 - The GC-content differences and the overrepresented sequences in `SRR4420296` need review of their sequence identities and sample metadata before any sample-specific filtering.
 - Tile `2103` has severe quality loss in read 1 across all samples, while read 2 passes. Check the raw FASTQ files by extracting tile IDs from read headers and summarizing their Phred scores. If scores for this tile are consistently lower across read positions, filter those read pairs from both mates.
-
-Proceed with all six raw samples in bulk; no sample-specific preprocessing is required, no need for trimming, filtering or deduplication.
 
 </div>
 

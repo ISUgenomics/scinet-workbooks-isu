@@ -26,10 +26,8 @@ tools:
     name: BBDUK
     exec: bbduk.sh
     help_cmd: bbduk.sh
-
-environment:
-  name: bbmap_40.00
-  path: /reference/workbook/bioinformatics/env/conda
+    path: /software/el9/apps/bbtools
+    version: 39.01
 
 tutorial:
   root_practice: /90daydata/shared/$USER
@@ -396,7 +394,7 @@ BBDUK requires Java runtime:
 module load java/11
 ```
 {% endcapture %}
-{% include setup/software tool_key="bbduk" tool="BBDUK" exec="bbduk.sh" path="/software/el9/apps/bbtools" version="39.01" required=bbduk_required %}
+{% include setup/software tool_key="bbduk" tool="BBDUK" exec="bbduk.sh" required=bbduk_required %}
 
 {% include setup/tool_verify tool_key="bbduk" %}
 
@@ -468,10 +466,10 @@ time memory bbduk.sh \
 - `hdist=1`: Allow one mismatch in k-mer matching.
 - `qtrim=rl`: Trim both ends of reads based on quality.
 - `trimq=20`: Quality threshold for trimming.
-- `minlength=50`: Discard reads shorter than 50 bases after trimming.
+- `minlength=36`: Discard reads shorter than 36 bases after trimming.
 - `tpe`: Trim both reads of a pair if one is trimmed.
 - `tbo`: Trim adapters based on pair overlap detection.
-- `trimpolyg=10`: Trim poly-G longer than 10 bases from either read end.
+- `trimpolyg=10`: Trim poly-G at least 10 bases long from either read end.
 </details>
 
 <details class="padding-x-2 bg-success-lighter"><summary><i>command log</i></summary>
@@ -488,13 +486,13 @@ Input is being processed as paired
 Started output streams: 0.802 seconds.
 Processing time:                352.227 seconds.
 
-Peak system RAM: 3.94 MB
+Peak system RAM: 2.19 GB  (2140800 KiB)
 real    6m4.715s
 user    34m32.497s
 sys     1m4.800s
 </small></pre>
 </details>
-*This run used about 4 MB RAM, completed in 6 minutes with 4 CPUs.*
+*This run used about 2.2 GB RAM, completed in 6 minutes with 4 CPUs.*
 <pre><small>Input:                          54821256 reads          8256837883 bases.
 QTrimmed:                       4421916 reads (8.07%)   210210353 bases (2.55%)
 Polymer-trimmed:                1101370 reads (2.01%)   44069316 bases (0.53%)
@@ -558,7 +556,7 @@ nano bbduk_batch.sh
 ```
 </li>
 <li markdown="1">Copy and paste the following script body. Before saving it, inspect the path settings carefully. Use `pwd` in your current workspace if you want to confirm the absolute working-directory path.
-<div id="fastqc-walltime-estimate-wrapper" class="usa-accordion">
+<div id="bbduk-walltime-estimate-wrapper" class="usa-accordion">
 {% include accordion title="Estimate walltime and resources for batch job" class="note" icon=true controls="bbduk-walltime-estimate" %}
 <div class="accordion_content" id="bbduk-walltime-estimate" markdown='1' hidden>
 Each BBDUK command processes one paired-end sample and can use several CPUs.  
@@ -568,7 +566,7 @@ Each BBDUK command processes one paired-end sample and can use several CPUs.
 
 For `bbduk` use a SLURM job array, where each task receives its own CPUs and memory. Note that your total allocation for this batch job scales with the number of tasks in the array (e.g., `4 CPUs x 9 tasks = 36 CPUs`). 
 In the benchmark, `threads=8` reduced runtime from `6m04s` to `5m10s` (about 15% faster), so use 8 CPUs per task when the extra resources are available (a single node has up to 72-96 on Ceres; up to 48 on Atlas). 
-To estimate walltime, use values measured in the interactive test run. The pilot processed one paired-end sample (two FASTQ files) in `6m4s`. When estimated walltime is only a few minutes, request `00:30:00` to provide additional buffer for filesystem variability.
+To estimate walltime, use values measured in the interactive test run. The pilot processed one paired-end sample (two FASTQ files) in `6m04s`. When estimated walltime is only a few minutes, request `00:30:00` to provide additional buffer for filesystem variability.
 </div>
 </div>
 
@@ -781,7 +779,7 @@ Per sequence GC content                           0          2 -      SRR2700360
 
 ***Did trimming improve read quality?***  
 *Yes. The total `FAIL` count fell from `56` to `48`, while `99.7%` of reads were retained.*  
-- *`Sequence Duplication` still fails across all reports; expected for transcriptomics dataset.*
+- *`Sequence Duplication` still fails across all reports; expected for the transcriptomic dataset.*
 - *The GC-content failures are still present for `SRR27003609_2` and `SRR27003611_2`.*
 
 {% include alert class="highlighted" content="The shared RNA-seq composition and duplication patterns may remain, because BBDUK was not used to alter them." %}
@@ -813,7 +811,7 @@ Record the cleanup in the project's `README` file. This record makes the process
 ```
 
 
-Proceed with all nine cleaned samples for downstream alignment and expression analysis. 
+Proceed with all nine trimmed samples for downstream alignment and expression analysis.
 
 </div>
 

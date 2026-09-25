@@ -524,7 +524,7 @@ dorado basecaller hac "${INPUT}" --modified-bases 5mC 6mA > dna_modbase_reads.ba
 
 ## PART 3: Use Dorado on a real `POD5` dataset
 
-This part of the tutorial demonstrates the challenges associated with real-life datasets due to their size, experimental design and availability of genomic reference. 
+This part of the tutorial demonstrates the challenges associated with real-life datasets due to their size, experimental design, and availability of a genomic reference.
 The goal is to apply Dorado basecalling on raw POD5 at a realistic scale and then perform the quality check (QC) on the generated reads.
 
 Your work can be continued in the same workspace created in [Prepare the practice workspace](#prepare-the-practice-workspace) step.  
@@ -653,7 +653,7 @@ Using a few largest reads in the trial interactive run can provide solid estimat
 mkdir test_run
 cd test_run
 echo $DATASET     # confirm dataset path
-ls $DATASET       # confirm that input files exists
+ls $DATASET       # confirm that input files exist
 
 INPUT=${DATASET}/{{ page.tutorial2.scale_sample }}
 time memory dorado basecaller hac "${INPUT}" -v -l ../{{ page.tutorial2.scale_read_ids }} > test_1.bam
@@ -686,7 +686,7 @@ sys     0m41.758s
 
 #### Runtime and Memory 
 
-[This run](#run-pilot-tests-in-the-interactive-session) completed successfully in ~3 minutes and used ~28GB RAM at peak on Ceres (using CPU only) within an interactive session set with `-n 1 --cpus-per-task=4 --mem=32G`. When tracking the progress of `[debug] Load reads...` you could notice that all reads are preloaded at once, that means just the 3 reads almost reached the avaialble `mem=32G` in the session. 
+[This run](#run-pilot-tests-in-the-interactive-session) completed successfully in ~3 minutes and used ~28GB RAM at peak on Ceres (using CPU only) within an interactive session set with `-n 1 --cpus-per-task=4 --mem=32G`. When tracking the progress of `[debug] Load reads...` you could notice that all reads are preloaded at once; that means just the 3 reads almost reached the available `mem=32G` in the session.
 
 {% capture exercise_1 %}
 Repeat the [Count the number and length of reads](#count-the-number-and-length-of-reads) step, this time selecting the five longest reads into `5_longest.tsv` and writing their read IDs to `{{ page.tutorial2.scale_read_ids_5 }}`. Then rerun the Dorado basecaller command for the 5 IDs and check whether the run completes successfully. <br>**TIP:** *Compare the runtime and peak memory with the three-read pilot run.*
@@ -723,7 +723,7 @@ export DORADO_CPU_RUNNERS=4
 
 
 {% capture exercise_2 %}
-Repeat an exercise.  <br>*Did your run complete successfully this time?*
+Repeat the exercise.  <br>*Did your run complete successfully this time?*
 
 <details markdown="1"><summary>SOLUTION</summary>
 
@@ -908,7 +908,7 @@ The larger allocation improved performance substantially, this run completed suc
 | real | 2m15.88s | 0m54.39s | 0m39.39s | **0m18.13s** | 0m22.21s |
 
 <pre><small>walltime = 20 seconds × (8763 / 5) = 584 minutes  ≈ 10h</small></pre>  
-The estimated full-file walltime decreased about 10x (from ~102h to ~10h), with requsted 8 CPUs and batchsize `-b 16`, while using only ~4 GB RAM.
+The estimated full-file walltime decreased about 10x (from ~102h to ~10h), with 8 requested CPUs and batch size `-b 16`, while using only ~4 GB RAM.
 
 </details>
 {% endcapture %}
@@ -1665,7 +1665,7 @@ The choice is made from the `POD5` metadata, not from the filename alone. Dorado
 </div>
 
 
-{% include accordion title="Is ONT multiplex POD5 dataset available?" controls="dorado-faq-multiplex" expanded=false class="outline" icon=false %}
+{% include accordion title="Is an ONT multiplex POD5 dataset available?" controls="dorado-faq-multiplex" expanded=false class="outline" icon=false %}
 <div id="dorado-faq-multiplex" class="accordion_content" markdown="1">
 For a quick example multiplex `POD5` input, use:
 

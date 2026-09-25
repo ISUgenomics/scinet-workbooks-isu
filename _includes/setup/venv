@@ -1,0 +1,86 @@
+<div class="margin-y-2" markdown="1">
+
+{%- assign env_meta = page.environment -%}
+{%- assign env_root = include.env_root | default: env_meta.root | default: "/reference/workbook/bioinformatics/env" -%}
+{%- assign env_name = include.env | default: env_meta.name -%}
+{%- assign env_path = include.env_path | default: env_meta.path | default: env_root -%}
+{%- assign env_location = env_path | append: "/" | append: env_name -%}
+{%- assign packages = env_meta.packages -%}
+{%- assign env_file = include.file | default: env_meta.file -%}
+{%- assign env_file_label = env_file | default: "pyvenv.cfg" -%}
+{%- assign tool_key = include.tool_key -%}
+{%- assign tool_meta = page.tools[tool_key] -%}
+{%- assign tool_context = include.tool_context -%}
+{%- assign python_tool = page.tools.python -%}
+{%- assign python_module = nil -%}
+{%- assign python_module_name = python_tool.module -%}
+{%- assign python_module_version = python_tool.version -%}
+{%- if python_module_name and python_module_version -%}
+  {%- assign python_module = python_module_name | append: "/" | append: python_module_version -%}
+{%- elsif python_module_name -%}
+  {%- assign python_module = python_module_name -%}
+{%- endif -%}
+{%- assign known_python = include.known_python | default: "false" -%}
+{%- assign known_venv = include.known_venv | default: "false" -%}
+
+{% if include.skip_note != "true" %}
+*Use a Python virtual environment (`venv`) when the workflow only needs Python packages.* <br>
+{% endif %}
+
+{% if known_venv == "true" %}
+Use the ready-made virtual environment for `{{ tool_meta.name }}{% if tool_context %} {{ tool_context }}{% endif %}`. 
+The shared virtual environment is available at `{{ env_location }}`. 
+The required Python version and installed tools are documented in the `{{ env_file_label }}` file stored with that environment.
+{% endif %}
+
+{% if python_module %}
+Load the Python module first:
+
+```bash
+module load {{ python_module }}
+```
+{% else %}
+
+{% unless known_python == "true" %}
+Check which Python modules are available:
+```bash
+module spider python
+module avail python
+```
+From the available Python versions, load the selected one with:
+
+```bash
+module load python/<version>
+```
+{% endunless %}
+{% endif %}
+
+{% if include.create == "true" %}
+Create and activate the virtual environment:
+
+```bash
+python -m venv {{ env_location }}
+source {{ env_location }}/bin/activate
+python -m pip install --upgrade pip
+{%- if packages %}
+pip install {{ packages }}
+{%- endif %}
+```
+{% endif %}
+
+{% if include.activate == "true" %}
+Activate the shared virtual environment:
+
+```bash
+source {{ env_location }}/bin/activate
+```
+{% endif %}
+
+{% if include.deactivate == "true" %}
+Deactivate the environment when you are done:
+
+```bash
+deactivate
+```
+{% endif %}
+</div>

@@ -1,0 +1,139 @@
+---
+title: Oxford Nanopore
+description: "Platform-specific Oxford Nanopore reference material for Dorado-based trimming, NanoPlot QC review, legacy Porechop cleanup, and read filtering."
+svg: /genomics.svg
+author: Aleksandra Badaczewska
+
+header:
+  overlay_image: 07-wrangling/assets/img/07_data_acquisition_banner.png
+index: 3
+order: 1
+wg: Bioinformatics
+type: reference material
+
+objectives:
+  - Understand how ONT read QC and preprocessing depend on both sequencing platform and input format.
+  - Distinguish current ONT raw-signal workflows from legacy exported-read cleanup approaches.
+  - Use the correct ONT tutorial in this module for QC review, filtering, or platform-specific trimming.
+
+applications:
+  - Choosing the right ONT workflow before assembly, mapping, transcript analysis, or variant detection.
+  - Checking whether an ONT dataset should be filtered, trimmed, or left unchanged.
+  - Interpreting whether a given ONT file set is suitable for `NanoPlot`, `Dorado`, or legacy `Porechop`.
+
+terms: [Oxford Nanopore, ONT, long-read, read length, quality control]
+
+overview: [objectives, applications, terminology]
+---
+
+## Overview
+
+Oxford Nanopore (ONT) long-read workflows are not defined by one universal cleanup path.  
+The main decision is usually whether you are working from raw-signal ONT data, from already exported ONT reads, or from QC summaries that only need interpretation before choosing a tool-specific path in this module.
+
+{% include overviews %}
+
+## What makes ONT distinct
+
+ONT data are long reads produced by [Oxford Nanopore sequencing](/bioinformatics/resources/sequencing#sequencing-technologies), a platform known for broad read-length range and more variable read quality than [PacBio HiFi](/bioinformatics/reads-qc/long-read/pacbio/).
+That variability is not automatically a problem, but it means ONT QC often focuses on:
+
+- [read length](/bioinformatics/resources/nomenclature#read-type-and-length) distribution,
+- per-read [quality score](/bioinformatics/resources/nomenclature#quality-score) patterns,
+- total retained yield,
+- platform-specific adapter, primer, or barcode structure,
+- and whether the data are still in native ONT form or already exported to [FASTQ](/bioinformatics/resources/file_formats#fastq).
+
+The practical consequence is that ONT tool choice depends on **both the biological problem and the current file form of the data**.
+
+## Dorado and legacy ONT workflows
+
+Oxford Nanopore changed its recommended workflow in **2025**, moving away from older exported-read cleanup patterns often associated with `Porechop` and toward `Dorado`-based workflow logic tied to raw-signal data. In practice, this means that newer ONT trimming logic is not simply a replacement `FASTQ` cleanup step, but part of a different workflow model.
+
+### Dorado raw-signal workflow logic
+
+In the [Dorado overview](https://software-docs.nanoporetech.com/dorado/0.8.3/basecaller/basecall_overview/), basecalling input is described as raw signal in `POD5` or deprecated `.fast5`, and adapter, primer, or barcode-aware handling belongs to that raw-signal workflow rather than to generic post-processing of already exported reads.
+
+The [Dorado FAQ](https://software-docs.nanoporetech.com/dorado/latest/troubleshooting/faq/) helps show where that workflow applies:
+
+| [Dorado FAQ](https://software-docs.nanoporetech.com/dorado/latest/troubleshooting/faq/) point | Why it matters here |
+|---|---|
+| As of **August 21, 2026**, Dorado supports **DNA R10.4.1** and **RNA004** conditions | these belong to the newer Dorado-centered workflow context |
+| **RNA002, R9.4.1, R10.3, and R10.4** are listed as legacy conditions | these should not be described as though they fit the same ONT workflow assumptions as newer Dorado usage |
+| **DNA R9.4.1** and **RNA002** were deprecated as of **Dorado v1.0.0** | this marks the formal shift away from some older ONT workflows |
+| **Dorado v0.9.6** was the last release supporting DNA R9.4.1 and RNA002 | inherited workflows built around those conditions should be treated as legacy context |
+
+Use [Barcode-aware adapter and primer trimming from ONT raw signal with Dorado](./trim_dorado) when:
+- you have ONT raw-signal input,
+- trimming must stay coordinated with basecalling or barcode-aware handling,
+- and the technical sequence problem is confirmed rather than assumed.
+
+### Legacy ONT workflow logic
+
+Older ONT materials often treat trimming as a separate cleanup step on already exported reads. In that context, tools such as `Porechop` may still appear.
+
+Use [Legacy adapter and barcode trimming for ONT reads with Porechop](./trim_porechop) when:
+- the workflow you inherited is explicitly legacy,
+- the available data are already exported ONT reads,
+- and the adapter or barcode artifact is genuinely present in those reads.
+
+Do **not** treat `Porechop` as the default ONT trimming route if the workflow belongs to a `Dorado` raw-signal path instead.
+
+## Choosing the QC step
+
+### Start by asking what data you have
+
+Before choosing a tutorial, identify the actual ONT input available to you:
+
+| If you have... | What it usually means | Start here |
+|---|---|---|
+| exported ONT reads in `FASTQ` | you can inspect QC directly and may be able to apply filtering or legacy read cleanup | [Long-read ONT quality check with NanoPlot](./qc_nanoplot) |
+| ONT raw-signal data such as `POD5` | trimming may belong to a `Dorado` basecalling workflow rather than later `FASTQ` post-processing | [Barcode-aware adapter and primer trimming from ONT raw signal with Dorado](./trim_dorado) |
+| older ONT reads already exported from legacy workflows | you may need to evaluate whether legacy `Porechop` cleanup is still relevant | [Legacy adapter and barcode trimming for ONT reads with Porechop](./trim_porechop) |
+| ONT reads with many short or low-quality molecules | filtering may help more than trimming | [ONT read-level quality and length filtering with Filtlong or chopper](./filter_filtlong_chopper) |
+
+If you are not yet sure what the files represent, review [Sequencing technologies and assay types](/bioinformatics/resources/sequencing), [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature), and [File formats in Bioinformatics](/bioinformatics/resources/file_formats) before proceeding.
+
+### Where each ONT tool fits
+
+| Tool | Role in ONT workflow | Use it when... | Avoid using it when... |
+|---|---|---|---|
+| [`NanoPlot`](./qc_nanoplot) | QC interpretation | you need read-length, quality, and yield summaries from exported ONT reads | you actually need platform-native basecalling or trimming decisions from raw signal |
+| [`Filtlong`](./filter_filtlong_chopper) | score-based read filtering | you want flexible quality or length filtering before downstream analysis | the main issue is adapter or barcode structure rather than read retention |
+| [`chopper`](./filter_filtlong_chopper) | threshold-based read filtering | you want simple, stream-friendly quality or length filtering | you need ranking-style filtering logic or platform-specific trimming |
+| [`Dorado`](./trim_dorado) | ONT trimming within raw-signal workflows | adapter, primer, or barcode-aware handling belongs with Dorado basecalling logic | you only have exported legacy `FASTQ` reads |
+| [`Porechop`](./trim_porechop) | legacy ONT read cleanup | inherited ONT read sets still require older post-export trimming logic | the workflow should be handled with `Dorado` instead |
+
+### A practical ONT decision path
+
+1. Start with the [Long-read QC and trimming](/bioinformatics/reads-qc/long-read/) lesson if you need the broader long-read logic first.
+2. If you already have exported ONT reads, inspect them with [Long-read ONT quality check with NanoPlot](./qc_nanoplot).
+3. If the main problem is too many short or low-quality reads, continue to [ONT read-level quality and length filtering with Filtlong or chopper](./filter_filtlong_chopper).
+4. If the main problem is confirmed adapter, primer, or barcode structure, decide whether the workflow belongs to raw-signal `Dorado` or legacy read-level `Porechop`.
+
+### Common beginner mistakes
+
+- Treating all ONT preprocessing as ordinary `FASTQ` trimming.
+- Assuming that every ONT dataset must be trimmed before analysis.
+- Using filtering when the real problem is read structure.
+- Using trimming when the real problem is excess short or low-quality reads.
+- Confusing `Dorado` raw-signal workflow logic with older `Porechop`-style post-processing.
+
+## Common ONT pipelines
+
+ONT preprocessing decisions are easier to interpret when you keep the downstream pipeline in mind. Common ONT applications include:
+
+- **Genome assembly**  
+  Assembly workflows often weigh read length against read-quality variation, so length or quality filtering may be considered when shorter or noisier ONT reads would reduce assembly value.
+
+- **Structural-variant and long-read genome analysis**  
+  These workflows depend on long read span, interpretable read structure, and enough retained yield to support larger genomic events across complex regions.
+
+- **Transcript, isoform, and direct RNA workflows**  
+  RNA-oriented ONT pipelines are especially sensitive to whether read structure is preserved correctly and whether barcode or primer-aware handling belongs in the upstream workflow rather than later read cleanup.
+
+- **Variant detection, consensus, and polishing**  
+  These workflows depend on a balance between read quality and retained coverage, so aggressive cleanup is useful only if it improves the final evidence rather than simply shrinking the dataset.
+
+- **Amplicon, targeted, or barcoded multiplex workflows**  
+  These ONT workflows make barcode-aware and primer-aware handling especially important, so preprocessing choices should stay aligned with the upstream workflow that produced the reads.

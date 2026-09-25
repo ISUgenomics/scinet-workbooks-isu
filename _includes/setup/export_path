@@ -1,0 +1,25 @@
+{%- assign export_path = include.path | default: "/path/to/tool/bin" -%}
+{%- assign shell_file = include.shell_file | default: "~/.bashrc" -%}
+{%- assign box_class = include.class | default: "note" -%}
+{%- assign box_title = include.title | default: "Add the tool to your PATH" -%}
+{%- assign controls_id = include.controls | default: "export-path-acc" -%}
+{%- capture export_line -%}export PATH="{{ export_path }}:$PATH"{%- endcapture -%}
+
+<div class="usa-accordion" data-allow-multiple>
+{% include accordion title=box_title class=box_class icon=true controls=controls_id %}
+<div id="{{ controls_id }}" class="accordion_content" style="font-size: 80%;" markdown="1" hidden>
+
+*(only once)* Add `{{ export_path }}` to your `{{ shell_file }}` so the executables from this path are available in your shell sessions:
+
+```bash
+grep -qxF '{{ export_line }}' {{ shell_file }} || echo '{{ export_line }}' >> {{ shell_file }}
+source {{ shell_file }}
+```
+
+Confirm that the tool is now available:
+
+```bash
+command -v {{ include.command | default: "memory" }}
+```
+</div>
+</div>

@@ -1,0 +1,362 @@
+---
+title: Short-read QC and trimming
+description: "Learn how to interpret common quality patterns in Illumina-style short reads and choose appropriate trimming, filtering, and validation strategies."
+svg: /genomics.svg
+author: Aleksandra Badaczewska
+
+header:
+  overlay_image: 07-wrangling/assets/img/07_data_acquisition_banner.png
+index: 2
+order: 1
+wg: Bioinformatics
+type: lesson module
+
+objectives:
+  - Understand what short-read quality control evaluates before downstream analysis.
+  - Recognize common technical problems in Illumina-style reads and how they appear in QC reports.
+  - Distinguish between quality trimming, adapter trimming, contaminant filtering, and length filtering.
+  - Choose among FastQC, fastp, BBDUK, Cutadapt, and Trimmomatic (legacy) depending on the observed problem and read structure.
+
+applications:
+  - Interpreting read-level QC results before alignment or quantification.
+  - Deciding whether trimming is necessary and which type of preprocessing is justified.
+  - Matching practical trimming strategies to specific short-read sequencing problems.
+  - Preparing RNA-seq and related short-read datasets for reproducible downstream analysis.
+
+terms: [read, read length, read layout, quality control, base quality, adapter contamination, read preprocessing]
+
+takeaways:
+  - The same QC warning can mean different things depending on assay design and read structure.
+  - Trimming should solve a specific problem, not just reduce the number of warnings in a report.
+  - Tool choice depends on what needs to be removed, preserved, or validated.
+  - Post-trimming QC is an essential part of short-read preprocessing.
+
+questions:
+  - qid: 1
+    title: Adapter carryover
+    question: "A short-read sample shows strong adapter signal near the read ends, while base quality is otherwise acceptable. What is the best first response?"
+    answers:
+      - apply only quality trimming, because the reads are otherwise high quality
+      - use adapter-aware trimming, because the main problem is adapter carryover
+      - discard the sample, because adapter contamination makes it unusable
+    answer: 2
+    responses:
+      - Quality trimming alone does not directly target the adapter sequence that caused the warning.
+      - Correct. When the main issue is adapter carryover or read-through, adapter-aware trimming is the most direct response.
+      - Adapter contamination is common and often correctable; it does not automatically make the sample unusable.
+  - qid: 2
+    title: Post-processing QC
+    question: "A post-processing QC report still contains some warnings, but the original low-quality tail and adapter signal are clearly reduced. What is the best interpretation?"
+    answers:
+      - the preprocessing failed because every warning did not disappear
+      - the preprocessing may still be successful if it addressed the original problem without damaging the reads
+      - the reads should be trimmed again until every module passes
+    answer: 2
+    responses:
+      - The goal of preprocessing is not to eliminate every warning.
+      - Correct. The key question is whether the chosen preprocessing improved the targeted problem while keeping the reads useful.
+      - Repeated trimming without a clear reason can remove useful sequence and make the data worse.
+  - qid: 3
+    title: Filtering vs trimming
+    question: "Which situation most strongly supports filtering rather than trimming?"
+    answers:
+      - a mild quality decline at the 3' end
+      - clear adapter read-through from short inserts
+      - many reads becoming too short or failing minimum criteria after preprocessing
+    answer: 3
+    responses:
+      - This usually points first to quality trimming.
+      - This usually points first to adapter-aware trimming.
+      - Correct. Filtering removes whole reads that no longer meet length or quality criteria.
+  - qid: 4
+    title: Paired-end imbalance
+    question: "One mate in a paired-end dataset looks substantially worse than the other. What should you do first?"
+    answers:
+      - trim both mates with the most aggressive settings available
+      - inspect the two mates separately before choosing a shared trimming strategy
+      - ignore the difference, because paired-end reads should always be treated identically
+    answer: 2
+    responses:
+      - Aggressive trimming may over-correct the better mate and reduce usable data.
+      - Correct. Mate-specific differences should be examined before choosing parameters that affect both reads.
+      - The difference may be biologically or technically important, and it can affect how safely the reads can be preprocessed.
+  - qid: 5
+    title: Tool choice for UMIs
+    question: "Which tool is the best match when adapter trimming must preserve barcode or UMI structure?"
+    answers:
+      - FastQC
+      - Cutadapt
+      - fastp
+    answer: 2
+    responses:
+      - FastQC is for assessment, not trimming.
+      - Correct. Cutadapt is the most suitable choice here because it supports adapter-aware and read-structure-aware handling.
+      - fastp is useful for routine short-read cleanup, but it is not the best match for barcode- or UMI-aware handling.
+  - qid: 6
+    title: Duplication and repeats
+    question: "High duplication or overrepresented sequences appear in the QC report. What is the best initial response?"
+    answers:
+      - remove those reads immediately in every case
+      - interpret whether the pattern is biological, technical, or contaminant before deciding on preprocessing
+      - ignore the pattern because duplication never affects analysis
+    answer: 2
+    responses:
+      - These patterns do not always imply that reads should be removed.
+      - Correct. Duplication and overrepresented sequences often require interpretation first, not automatic preprocessing.
+      - High duplication or repeated sequences can matter, but their meaning depends on context.
+  - qid: 7
+    title: Short-read workflow logic
+    question: "Which step belongs in the standard short-read QC workflow before downstream analysis begins?"
+    answers:
+      - run QC only after trimming, because raw reads are not yet informative
+      - assess the raw reads first, then trim or filter only if the QC results justify it
+      - trim every dataset first, then decide whether QC is still necessary
+    answer: 2
+    responses:
+      - Raw-read QC is the first checkpoint; waiting until after trimming hides the original problem.
+      - Correct. In short-read workflows, raw-read QC comes first, and preprocessing should follow only when the observed pattern justifies it.
+      - Automatic trimming without first inspecting the reads is exactly what this lesson warns against.
+  - qid: 8
+    title: Signs of improvement
+    question: "Which outcome best shows that preprocessing improved a short-read dataset?"
+    answers:
+      - the processed reads now have fewer warnings and remain suitable for the planned downstream analysis
+      - the reads are much shorter, but every FastQC module now passes
+      - the original problem is unchanged, but the report looks simpler
+    answer: 1
+    responses:
+      - Correct. Improvement means the targeted problem was reduced without removing so much sequence that the reads become less useful.
+      - Passing more modules is not enough if the read set has been over-trimmed.
+      - A simpler-looking report does not help if the original problem remains unresolved.
+
+overview: [objectives, applications, terminology]
+---
+
+<div class="highlighted highlighted--basic"><div class="highlighted__body" markdown="1">
+This lesson assumes familiarity with basic sequencing concepts and the `FASTQ` format.  
+If you need a refresher, start with [Sequencing technologies and assay types](/bioinformatics/resources/sequencing), [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature) and [File formats in Bioinformatics](/bioinformatics/resources/file_formats).
+</div></div>
+
+## Overview
+
+This lesson is a direct continuation of the introduction to [Sequencing Reads Quality Control](../), and focuses on how quality assessment and preprocessing decisions apply to **Illumina-style short reads**. 
+It explains what short-read QC reports are measuring and what the most common warning patterns actually mean. The goal is to recognize significant read-level QC signals, understand when trimming and/or filtering is justified, and choose an appropriate preprocessing strategy before downstream analysis.
+
+{% include overviews %}
+
+
+## Short reads
+
+Short reads are typically high-accuracy sequencing reads about **50-300 bases** long, most commonly generated by [Illumina platforms](/bioinformatics/resources/sequencing#sequencing-technologies) in [single-end or paired-end](/bioinformatics/resources/nomenclature#read-type-and-length) format. 
+The limited read length brings direct QC implications: 
+- base loss can remove a substantial fraction of the read, 
+- short inserts can produce clear adapter read-through, 
+- differences between read 1 and read 2 can directly affect how safely the data can be trimmed and retained for downstream analysis.
+
+Therefore, short-read quality control is not only about finding low-quality bases. It is also about recognizing the technical patterns that explain 
+why a dataset may behave badly later during alignment, quantification, or interpretation. 
+In practice, most read preprocessing decisions come down to a small set of questions:
+
+- **What problem is visible in the reads?**  
+  *For example: low-quality tails, adapter carryover, unusual GC content, or strong duplication.*
+
+- **How severe is it?**  
+  *Not every warning requires read trimming or filtering. Decide whether the problem affects downstream analysis enough to justify preprocessing.*
+
+- **What must be preserved in the read structure?**  
+  *Paired-end consistency, barcodes, UMIs, and assay-specific sequence context all matter. Decide which correction changes the data in a helpful rather than destructive way.*
+
+- **Which tool matches the problem most directly?**  
+  *Different tools are better for assessment, adapter-aware trimming, k-mer-based filtering, or standard paired-end cleanup.*
+
+
+
+## What QC evaluates
+
+### Base quality
+
+Per-base quality reflects the confidence of individual base calls across the read. In short-read datasets, quality often declines toward the 3' end, but the magnitude and shape of that decline matter more than the mere existence of a warning, because they help determine whether the affected sequence should be trimmed or can still be retained. For a refresher on [Phred quality scores](/bioinformatics/resources/nomenclature#quality-score) and how they are stored in `FASTQ`, see [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature#fastq-format).
+
+### Adapter contamination
+
+Sequencing adapters are short synthetic sequences attached to DNA or cDNA fragments during library preparation so the fragments can bind to the flow cell and be sequenced. [Adapter contamination](/glossary) occurs when part of that synthetic sequence is still present in the reads. This can happen when the biological insert is shorter than the sequencing read, so the instrument reads through the fragment and into the adapter sequence, or when library preparation artifacts persist in the final data. Adapter contamination is one of the most common reasons to trim short reads before downstream analysis, especially when read-through occurs in short-insert libraries.
+
+### Read length and layout
+
+Short-read datasets also need to be structurally consistent. A pipeline may expect reads in a specific [layout](/bioinformatics/resources/nomenclature#read-type-and-length), such as single-end or paired-end, and within a usable length range. Preprocessing steps that break pairing, create many unpaired reads, or over-shorten the surviving reads can make later stages less reliable. To revisit how sequencing reads differ by type and size, see [Reads, contigs, scaffolds, and nucleotide sequences](/bioinformatics/resources/nomenclature#read-type-and-length).
+
+### Duplication and overrepresented sequence
+
+High duplication levels or overrepresented sequence patterns mean that many reads are identical or unusually frequent. This may indicate technical artifacts, biological redundancy, strong expression skew, or contamination. These signals should be interpreted in context rather than treated as automatic failures, especially in assays where highly abundant molecules are expected.
+
+### GC distribution
+
+GC distribution describes how much of the read sequence is made up of guanine (`G`) and cytosine (`C`) bases. It helps reveal whether read composition is plausible for the assay and organism. Major deviations from the expected GC profile of the sample, or from other comparable samples in the same dataset, can indicate contamination, platform- or run-specific bias, library-preparation effects, or highly specialized sequence composition.
+
+
+## Common QC patterns
+
+| Pattern in QC report | Likely cause | Likely consequence | First response |
+|----------------------|--------------|--------------------|----------------|
+| gradual 3' quality decline | expected short-read deterioration, run-cycle effects | lower confidence near read ends | inspect per-base quality and consider conservative quality trimming |
+| strong adapter signal near read ends | short inserts, adapter read-through, incomplete cleanup | spurious sequence content, poorer mapping | use adapter-aware trimming |
+| one mate is clearly worse than the other | asymmetric library behavior or instrument effects | unbalanced paired-end quality | inspect both mates separately before choosing parameters |
+| unusual GC distribution | contamination, strong bias, sample-specific composition | misleading interpretation, poor comparability | compare across samples and inspect overrepresented sequences |
+| many short surviving reads after trimming | aggressive filters or poor original quality | lower mappability, data loss | reconsider cutoff settings and minimum length |
+
+
+## Preprocessing options
+
+Read preprocessing is used to correct or remove technical artifacts that would otherwise reduce the reliability of downstream alignment, quantification, or interpretation.
+The two main approaches are:
+- [trimming](#trimming), which **removes part of a read** while preserving the remaining sequence for downstream analysis;
+- [filtering](#filtering), which **removes entire reads** that do not meet quality, length, or content criteria.
+
+<div class="highlighted highlighted--warning"><div class="highlighted__body" markdown="1">
+Not all QC issues lead directly to preprocessing: [duplication and overrepresented sequences](#duplication-and-overrepresented-sequences) often require interpretation first, 
+because they may reflect real biology, technical bias, or contamination depending on the dataset.
+</div></div>
+
+<div class="highlighted highlighted--tip"><div class="highlighted__body" markdown="1">
+**Do not trim just to make every QC module pass.**  
+The best preprocessing strategy is the one that removes meaningful technical artifacts while preserving the sequence information your downstream analysis still needs.
+</div></div>
+
+### Trimming
+
+#### Quality trimming
+
+Quality trimming removes low-confidence sequence, usually from read ends. It is most helpful when low-quality tails are systematic enough to interfere with downstream analysis but not so severe that the sample should simply be excluded.
+
+#### Adapter-aware trimming
+
+Adapter-aware trimming targets known sequencing adapter sequence rather than trimming by quality alone. This is the correct first response when the main problem is adapter carryover or insert read-through.
+
+#### Paired-end synchronization
+
+For paired-end data, trimming one mate can affect the interpretation and usability of the other. Some tools preserve synchronized pairs explicitly, while others require more careful handling of read structure and outputs.
+
+### Filtering
+
+#### Contaminant filtering
+
+Some tools can match and remove specific unwanted sequence content beyond standard adapters. This is particularly useful when QC suggests contamination or recurring technical sequence that should not remain in the dataset.
+
+#### Length filtering
+
+Length filtering removes reads that become too short after trimming to remain informative. The key tradeoff is between retaining marginal reads and preserving enough sequence context for reliable downstream use.
+
+
+## Choosing a tool
+
+| Tool | Best for | Strengths | Common misuse |
+|------|----------|-----------|---------------|
+| [`FastQC`](./qc_fastqc) | quality assessment | fast, interpretable, standard first check | users assume warnings automatically dictate trimming |
+| [`BBDUK`](./trim_bbduk) | adapter + contaminant filtering with quality trimming | flexible k-mer matching, good for combined filtering tasks | parameters are tuned too aggressively without validation |
+| [`Cutadapt`](./trim_cutadapt) | adapter-aware trimming with flexible read-structure handling | strong adapter logic, good for special cases such as UMI-aware scenarios | users trim assay-specific bases without checking read design |
+| [`fastp`](./trim_fastp) | routine short-read adapter trimming, quality filtering, and QC reporting | fast all-in-one workflow, widely used for standard Illumina cleanup | users accept default filtering without checking whether the trimmed output still fits the assay |
+| [`Trimmomatic (legacy)`](./trim_trimmomatic) | legacy standard paired-end trimming with explicit module order | transparent workflow, still common in teaching and older batch pipelines | users overlook unpaired outputs or overuse sliding-window trimming |
+
+
+## Validate output reads
+
+Preprocessing decisions should be validated with a post-processing QC step. In short-read workflows, this usually means running [FastQC](./qc_fastqc) again on the trimmed and/or filtered reads 
+and comparing the new report with the original QC results. This second QC pass is often more informative than the initial report, 
+because it shows whether the chosen preprocessing actually addressed the original problem.
+
+### QC validation checklist
+
+- **Did base quality improve in the problematic regions?**  
+  *For example, a poor-quality 3' tail should become shorter or less pronounced, while the rest of the read should remain usable.*
+
+- **Did adapter content decrease where expected?**  
+  *If adapter read-through was the original problem, the follow-up report should show a clear reduction rather than the same signal repeating after preprocessing.*
+
+- **Are read length and layout still appropriate?**  
+  *Check whether too many reads became too short, whether paired-end structure was preserved, and whether large numbers of reads were left unpaired.*
+
+- **Did duplication or overrepresented sequences become easier to interpret?**  
+  *These patterns do not always disappear after preprocessing, but the follow-up QC should help you tell whether the remaining signal is more likely biological, technical, or contaminant in origin.*
+
+- **Do the processed reads now better support the planned downstream analysis?**  
+  *The best outcome is not the fewest warnings, but a read set that is cleaner, still informative, and more suitable for alignment, quantification, or other downstream use.*
+
+
+## If your case is...
+
+<div class="usa-accordion" data-allow-multiple markdown="1">
+
+{% include accordion title="uncertainty about whether trimming is needed at all" controls="srqc6" expanded=false class="outline" icon=false %}
+<div id="srqc6" class="accordion_content" markdown="1">
+Start with [Illumina short-read quality check with FastQC](./qc_fastqc).  
+The goal is to determine whether the warnings reflect a real preprocessing need or simply a pattern that should be documented and monitored.
+</div>
+
+{% include accordion title="mild 3' quality drop in standard Illumina RNA-seq" controls="srqc1" expanded=false class="outline" icon=false %}
+<div id="srqc1" class="accordion_content" markdown="1">
+This is a common and often manageable short-read pattern. Start by checking whether the decline is consistent across samples and whether it reaches clearly low-confidence territory.  
+If trimming is justified, the tutorial [Standard adapter trimming, quality filtering, and QC reporting with fastp](./trim_fastp) is usually the most direct starting point.  
+If you need to match an older pipeline that already uses sliding-window logic, use [Sliding-window quality trimming and length filtering with Trimmomatic (legacy)](./trim_trimmomatic).
+</div>
+
+{% include accordion title="quality decline without clear adapter contamination" controls="srqc1a" expanded=false class="outline" icon=false %}
+<div id="srqc1a" class="accordion_content" markdown="1">
+This usually points more strongly to **quality trimming** than to adapter-aware trimming. If the decline is limited to the read ends and the remaining read length stays useful, conservative trimming may help. If the drop is mild and downstream mapping is still expected to be reliable, documenting the pattern may be enough.
+</div>
+
+{% include accordion title="strong adapter contamination after short-insert sequencing" controls="srqc2" expanded=false class="outline" icon=false %}
+<div id="srqc2" class="accordion_content" markdown="1">
+Adapter-aware trimming is the priority here. If the problem is primarily standard adapter carryover, use [Adapter and UMI-aware trimming with poly-G tail correction using Cutadapt](./trim_cutadapt).  
+If the dataset may also need combined contaminant filtering, compare that workflow with [K-mer-based adapter and contaminant trimming/filtering with BBDUK](./trim_bbduk).
+</div>
+
+{% include accordion title="adapter-aware plus UMI-aware handling" controls="srqc3" expanded=false class="outline" icon=false %}
+<div id="srqc3" class="accordion_content" markdown="1">
+Do not treat these reads as generic short reads until you verify where the UMI or barcode information lives.  
+Use [Adapter and UMI-aware trimming with poly-G tail correction using Cutadapt](./trim_cutadapt) to trim adapter sequence while preserving important barcode or UMI structure in the reads.
+</div>
+
+{% include accordion title="suspected contaminant sequence in addition to adapters" controls="srqc4" expanded=false class="outline" icon=false %}
+<div id="srqc4" class="accordion_content" markdown="1">
+When the issue goes beyond ordinary adapter trimming, a k-mer-based tool is often more appropriate.  
+Start with [K-mer-based adapter and contaminant trimming/filtering with BBDUK](./trim_bbduk).
+</div>
+
+{% include accordion title="warnings remain even though the reads look mostly usable" controls="srqc4a" expanded=false class="outline" icon=false %}
+<div id="srqc4a" class="accordion_content" markdown="1">
+This is common, especially when the warnings reflect sequence composition, assay design, or mild technical bias rather than a correctable artifact. The goal is not to make every module pass, but to decide whether the remaining warnings are likely to interfere with downstream analysis.
+</div>
+
+{% include accordion title="one mate consistently looks worse than the other" controls="srqc5" expanded=false class="outline" icon=false %}
+<div id="srqc5" class="accordion_content" markdown="1">
+Inspect both mates separately before deciding on a shared trimming strategy. Paired-end synchronization matters, and some tools handle this more explicitly than others.  
+A good first step is [Illumina short-read quality check with FastQC](./qc_fastqc), followed by the trimming tutorial that best matches the actual problem.
+</div>
+
+{% include accordion title="many reads become too short after trimming or filtering" controls="srqc5a" expanded=false class="outline" icon=false %}
+<div id="srqc5a" class="accordion_content" markdown="1">
+This often means the preprocessing settings are too aggressive for the original read length or insert size. Revisit quality thresholds, minimum-length cutoffs, and whether the original problem justified that level of sequence removal.
+</div>
+
+</div>
+
+
+## Quick Quiz
+
+<div class="usa-accordion ">
+{% include accordion title="Check your understanding" controls="quiz-short-read-qc" expanded=false class="question" icon=true %}
+<div id="quiz-short-read-qc" class="accordion_content" markdown='1'>
+Now that you've worked through short-read QC patterns, preprocessing options, and validation logic, use these questions to test whether you can match a read-level problem to the right interpretation or response.
+
+{% include question qid="1,2,3,4,5,6,7,8" %}
+</div>
+</div>
+
+
+## Lesson takeaways
+
+<ul>
+  {% for takeaway in page.takeaways %}
+    <li>{{ takeaway }}</li>
+  {% endfor %}
+</ul>

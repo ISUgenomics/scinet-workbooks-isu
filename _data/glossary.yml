@@ -617,6 +617,76 @@ glossary:
     definition: Systematic errors or preferences introduced by a sequencing platform, which can affect base calling or representation of certain sequences.
     related: [sequencing technologies, read]
 
+  - term: long-read
+    cat: Bioinformatics
+    definition: Sequencing reads that often span thousands to tens of thousands of bases, commonly produced by PacBio or Oxford Nanopore platforms, and useful for resolving structural complexity, long repeats, and full-length molecules.
+    related: [read, read length, sequencing technologies]
+
+  - term: base quality
+    cat: Bioinformatics
+    definition: The confidence assigned to each base call in a sequencing read, usually expressed as a Phred quality score and used to judge whether parts of a read are reliable enough to retain.
+    related: [read, quality control, FASTQ]
+
+  - term: FASTQ
+    cat: Bioinformatics
+    definition: A text-based sequencing file format that stores each read together with its nucleotide sequence and base-by-base quality scores.
+    related: [read, quality control, base quality]
+
+  - term: Oxford Nanopore
+    cat: Bioinformatics
+    definition: A sequencing platform that produces long reads by measuring changes in electrical current as nucleic-acid molecules pass through nanopores.
+    related: [long-read, sequencing technologies]
+
+  - term: ONT
+    cat: Bioinformatics
+    definition: An abbreviation for Oxford Nanopore Technologies and its sequencing platform.
+    related: [Oxford Nanopore, long-read]
+
+  - term: raw-signal data
+    cat: Bioinformatics
+    definition: Electrical measurements recorded by a nanopore sequencing instrument before they are converted into nucleotide sequences.
+    related: [Oxford Nanopore, basecalling, POD5]
+
+  - term: basecalling
+    cat: Bioinformatics
+    definition: Converting raw sequencing signal into nucleotide sequences with a computational model.
+    related: [raw-signal data, Oxford Nanopore]
+
+  - term: POD5
+    cat: Bioinformatics
+    definition: Oxford Nanopore's binary format for storing raw electrical sequencing signal.
+    related: [raw-signal data, Oxford Nanopore]
+
+  - term: read filtering
+    cat: Bioinformatics
+    definition: Removing reads that do not meet quality, length, or other criteria required for downstream analysis.
+    related: [read, quality control, read length]
+
+  - term: PacBio
+    cat: Bioinformatics
+    definition: A sequencing technology that produces long reads, including highly accurate HiFi reads, from single DNA molecules.
+    related: [long-read, sequencing technologies]
+
+  - term: PacBio HiFi
+    cat: Bioinformatics
+    definition: A highly accurate PacBio consensus read produced by sequencing the same circular DNA molecule multiple times.
+    related: [PacBio, long-read, read]
+
+  - term: read structure
+    cat: Bioinformatics
+    definition: The arrangement of biological sequence and technical elements, such as adapters, barcodes, and inserts, within a read.
+    related: [read, adapter contamination]
+
+  - term: yield
+    cat: Bioinformatics
+    definition: The total amount of sequence retained for analysis, usually summarized as reads, bases, or gigabases.
+    related: [read, coverage]
+
+  - term: BAM
+    cat: Bioinformatics
+    definition: A binary file format for storing aligned or otherwise processed sequencing reads and their associated metadata.
+    related: [read, PacBio]
+
 
   - term: project organization
     cat: Bioinformatics
@@ -646,11 +716,38 @@ glossary:
 
   - term: read length
     cat: Bioinformatics
-    definition: |
-      The number of base pairs in a single sequencing read; affects alignment, assembly, and resolution of analysis.
-      * **short-read** - Sequencing reads typically 50-300 base pairs long, commonly produced by Illumina platforms, offering high accuracy.
-      * **long-read** - Sequencing reads that span thousands of bases, produced by platforms like PacBio or Oxford Nanopore, useful for resolving complex genomic regions.
+    definition: The number of base pairs in a single sequencing read; it affects alignment, assembly, and the resolution of downstream analysis. Short reads are typically tens to hundreds of bases long, while long reads often span thousands to tens of thousands of bases.
     related: [DNA, read, transcriptome, RNA-seq]
+
+  - term: read layout
+    cat: Bioinformatics
+    definition: The arrangement of sequencing reads produced for each fragment, such as single-end or paired-end reads, including the order and relationship of read mates.
+    related: [read, single-end vs paired-end, read structure]
+
+  - term: adapter contamination
+    cat: Bioinformatics
+    definition: The presence of library adapter sequence in a sequencing read, usually because the insert was shorter than the read or because of a library-preparation artifact.
+    related: [read structure, read preprocessing, quality control]
+
+  - term: overrepresented sequence
+    cat: Bioinformatics
+    definition: A nucleotide sequence that occurs more often than expected in a sequencing dataset; it may indicate adapter or other technical contamination, abundant biological transcripts, or another library-specific pattern.
+    related: [adapter contamination, quality control, read preprocessing]
+
+  - term: adapter/primer trimming
+    cat: Bioinformatics
+    definition: Removing adapter or primer sequences from the ends of sequencing reads before downstream analysis.
+    related: [adapter contamination, read preprocessing, read structure]
+
+  - term: read trimming
+    cat: Bioinformatics
+    definition: Removing adapter, low-quality, or other technical sequence from the ends or internal regions of sequencing reads to improve their suitability for downstream analysis while retaining the remaining biological sequence.
+    related: [adapter/primer trimming, adapter contamination, read preprocessing]
+
+  - term: read preprocessing
+    cat: Bioinformatics
+    definition: The initial cleaning and preparation of sequencing reads before downstream analysis, including quality assessment, adapter trimming, filtering, and format checks.
+    related: [quality control, read filtering, adapter contamination]
 
   - term: RNA
     cat: Bioinformatics

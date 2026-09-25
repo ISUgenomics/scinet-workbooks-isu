@@ -3,8 +3,8 @@
 {%- assign tool_name = include.tool | default: tool_meta.name | default: page.tool | default: "tool" -%}
 {%- assign exec_name = include.exec | default: tool_meta.exec | default: tool_name -%}
 {%- assign software_root = include.root | default: "/software/el9/apps" -%}
-{%- assign tool_path = include.path | default: software_root -%}
-{%- assign tool_version = include.version | default: '' -%}
+{%- assign tool_path = include.path | default: tool_meta.path | default: software_root -%}
+{%- assign tool_version = include.version | default: tool_meta.version | default: '' -%}
 {%- assign requirements = include.required | default: '' -%}
 
 <div class="margin-y-2" markdown="1">
